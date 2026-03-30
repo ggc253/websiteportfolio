@@ -1,0 +1,5 @@
+title: Your Best Work
+youtube_id: REPLACE_WITH_VIDEO_ID
+description: Your flagship piece.
+client:
+year: 2024

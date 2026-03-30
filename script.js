@@ -3,7 +3,7 @@
    ============================================================ */
 
 let siteData = null;
-const VALID_SECTIONS = ['edit', 'directing', 'photos', 'about'];
+const VALID_SECTIONS = ['home', 'edit', 'directing', 'photos', 'about'];
 
 // ---- INIT ----
 
@@ -13,68 +13,48 @@ async function init() {
     siteData = await res.json();
   } catch (err) {
     console.warn('Could not load data.json:', err);
-    siteData = { edit: [], directing: [], photos: [], about: {} };
+    siteData = { featured: [], edit: [], directing: [], photos: [], about: {} };
   }
 
-  // Set up event listeners
   document.getElementById('modal-backdrop').addEventListener('click', closeModal);
   document.getElementById('modal-close').addEventListener('click', closeModal);
   document.getElementById('lightbox-backdrop').addEventListener('click', closeLightbox);
   document.getElementById('lightbox-close').addEventListener('click', closeLightbox);
 
   document.addEventListener('keydown', (e) => {
-    if (e.key === 'Escape') {
-      closeModal();
-      closeLightbox();
-    }
+    if (e.key === 'Escape') { closeModal(); closeLightbox(); }
   });
 
   window.addEventListener('hashchange', route);
-  route(); // Initial render
+  route();
 }
 
 // ---- ROUTING ----
 
 function route() {
   const hash = window.location.hash.slice(1);
-  const section = VALID_SECTIONS.includes(hash) ? hash : 'edit';
+  const section = VALID_SECTIONS.includes(hash) ? hash : 'home';
 
-  // If hash was missing or invalid, update URL silently
   if (!hash || !VALID_SECTIONS.includes(hash)) {
     history.replaceState(null, '', '#' + section);
   }
 
   const isAbout = section === 'about';
 
-  // Toggle body class for light/dark mode
   document.body.classList.toggle('about-mode', isAbout);
+  document.getElementById('ticker').classList.toggle('hidden', isAbout);
+  document.getElementById('main').classList.toggle('no-ticker', isAbout);
 
-  // Show/hide ticker
-  const ticker = document.getElementById('ticker');
-  ticker.classList.toggle('hidden', isAbout);
-
-  // Adjust main top padding
-  const main = document.getElementById('main');
-  main.classList.toggle('no-ticker', isAbout);
-
-  // Swap sections
-  document.querySelectorAll('.section').forEach((s) => {
-    s.classList.remove('active', 'visible');
-  });
+  document.querySelectorAll('.section').forEach((s) => s.classList.remove('active', 'visible'));
 
   const activeEl = document.getElementById(section);
   if (activeEl) {
     activeEl.classList.add('active');
-    // Small delay to allow display:block before starting opacity transition
-    requestAnimationFrame(() => {
-      requestAnimationFrame(() => {
-        activeEl.classList.add('visible');
-      });
-    });
+    requestAnimationFrame(() => requestAnimationFrame(() => activeEl.classList.add('visible')));
     renderSection(section);
   }
 
-  // Update nav active state
+  // Nav: highlight edit/directing/photos/about but not home (logo = home)
   document.querySelectorAll('.nav-link').forEach((link) => {
     link.classList.toggle('active', link.dataset.section === section);
   });
@@ -84,13 +64,13 @@ function route() {
 
 function renderSection(section) {
   if (!siteData) return;
-  const renderers = {
-    edit:       () => renderVideoGrid('edit-grid', siteData.edit || []),
-    directing:  () => renderVideoGrid('directing-grid', siteData.directing || []),
-    photos:     () => renderPhotoGrid('photos-grid', siteData.photos || []),
-    about:      () => renderAbout(siteData.about || {}),
-  };
-  if (renderers[section]) renderers[section]();
+  ({
+    home:      () => renderVideoGrid('home-grid',      siteData.featured  || []),
+    edit:      () => renderVideoGrid('edit-grid',      siteData.edit      || []),
+    directing: () => renderVideoGrid('directing-grid', siteData.directing || []),
+    photos:    () => renderPhotoGrid('photos-grid',    siteData.photos    || []),
+    about:     () => renderAbout(siteData.about || {}),
+  })[section]?.();
 }
 
 // ---- VIDEO GRID ----
@@ -105,23 +85,21 @@ function renderVideoGrid(containerId, videos) {
   }
 
   container.innerHTML = videos.map((v) => {
-    const thumb = v.thumbnail
-      || (v.vimeo_id ? `https://vumbnail.com/${v.vimeo_id}.jpg` : '');
-
+    const thumb = getThumb(v);
     const metaParts = [v.client, v.year].filter(Boolean);
     const meta = metaParts.join(' \u2014 ');
 
     const thumbHtml = thumb
-      ? `<img class="video-thumb" src="${esc(thumb)}" alt="${esc(v.title)}" loading="lazy">`
-      : `<div class="video-thumb" style="background:#181818;width:100%;height:100%;position:absolute;inset:0;"></div>`;
+      ? `<img class="video-thumb" src="${esc(thumb)}" alt="${esc(v.title)}" loading="lazy"
+             onerror="this.src='${esc(getFallbackThumb(v))}';">`
+      : `<div class="video-thumb" style="background:#181818;position:absolute;inset:0;"></div>`;
 
     return `
       <div class="video-card"
-           onclick="openVideo('${esc(v.vimeo_id)}', '${esc(v.title)}')"
-           role="button"
-           tabindex="0"
+           onclick="openVideo(${JSON.stringify(v)})"
+           role="button" tabindex="0"
            aria-label="Play ${esc(v.title)}"
-           onkeydown="if(event.key==='Enter')openVideo('${esc(v.vimeo_id)}','${esc(v.title)}')">
+           onkeydown="if(event.key==='Enter')openVideo(${JSON.stringify(v)})">
         ${thumbHtml}
         <div class="video-overlay">
           <div class="video-play" aria-hidden="true"></div>
@@ -130,9 +108,23 @@ function renderVideoGrid(containerId, videos) {
             ${meta ? `<div class="video-meta">${escHtml(meta)}</div>` : ''}
           </div>
         </div>
-      </div>
-    `;
+      </div>`;
   }).join('');
+}
+
+// ---- THUMBNAIL HELPERS ----
+
+function getThumb(v) {
+  if (v.thumbnail) return v.thumbnail;
+  if (v.youtube_id) return `https://img.youtube.com/vi/${v.youtube_id}/maxresdefault.jpg`;
+  if (v.vimeo_id)   return `https://vumbnail.com/${v.vimeo_id}.jpg`;
+  return '';
+}
+
+function getFallbackThumb(v) {
+  // YouTube fallback if maxresdefault 404s
+  if (v.youtube_id) return `https://img.youtube.com/vi/${v.youtube_id}/hqdefault.jpg`;
+  return '';
 }
 
 // ---- PHOTO GRID ----
@@ -148,17 +140,15 @@ function renderPhotoGrid(containerId, photos) {
 
   container.innerHTML = photos.map((p) => `
     <div class="photo-card"
-         onclick="openPhoto('${esc(p.src)}', '${esc(p.title)}')"
-         role="button"
-         tabindex="0"
+         onclick="openPhoto('${esc(p.src)}','${esc(p.title)}')"
+         role="button" tabindex="0"
          aria-label="${esc(p.title)}"
          onkeydown="if(event.key==='Enter')openPhoto('${esc(p.src)}','${esc(p.title)}')">
       <img src="${esc(p.src)}" alt="${esc(p.title)}" loading="lazy">
       <div class="photo-overlay">
         <span class="photo-overlay-title">${escHtml(p.title)}</span>
       </div>
-    </div>
-  `).join('');
+    </div>`).join('');
 }
 
 // ---- ABOUT ----
@@ -167,47 +157,45 @@ function renderAbout(about) {
   const container = document.getElementById('about-content');
   if (!container) return;
 
-  const links = [
-    about.email    ? `<a href="mailto:${esc(about.email)}">${escHtml(about.email)}</a>` : '',
+  const contactLinks = [
+    about.email ? `<a href="mailto:${esc(about.email)}">${escHtml(about.email)}</a>` : '',
   ].filter(Boolean);
 
-  const socials = [
-    about.vimeo     ? `<a href="${esc(about.vimeo)}"     target="_blank" rel="noopener noreferrer">Vimeo</a>`     : '',
-    about.youtube   ? `<a href="${esc(about.youtube)}"   target="_blank" rel="noopener noreferrer">YouTube</a>`   : '',
-    about.instagram ? `<a href="${esc(about.instagram)}" target="_blank" rel="noopener noreferrer">Instagram</a>` : '',
+  const socialLinks = [
+    about.youtube   ? `<a href="${esc(about.youtube)}"   target="_blank" rel="noopener">YouTube</a>`   : '',
+    about.vimeo     ? `<a href="${esc(about.vimeo)}"     target="_blank" rel="noopener">Vimeo</a>`     : '',
+    about.instagram ? `<a href="${esc(about.instagram)}" target="_blank" rel="noopener">Instagram</a>` : '',
   ].filter(Boolean);
 
   container.innerHTML = `
     ${about.quote ? `<div class="about-quote">${escHtml(about.quote)}</div>` : ''}
     ${about.bio   ? `<p class="about-bio">${escHtml(about.bio)}</p>` : ''}
     <div class="about-footer">
-      ${links.length ? `
-        <div class="about-col">
-          <h3>Contact</h3>
-          ${links.join('')}
-        </div>` : ''}
-      ${socials.length ? `
-        <div class="about-col">
-          <h3>Follow</h3>
-          ${socials.join('')}
-        </div>` : ''}
-    </div>
-  `;
+      ${contactLinks.length ? `<div class="about-col"><h3>Contact</h3>${contactLinks.join('')}</div>` : ''}
+      ${socialLinks.length  ? `<div class="about-col"><h3>Follow</h3>${socialLinks.join('')}</div>`   : ''}
+    </div>`;
 }
 
 // ---- VIDEO MODAL ----
 
-function openVideo(vimeoId, title) {
-  if (!vimeoId) return;
+function openVideo(v) {
   const modal = document.getElementById('video-modal');
   const box   = document.getElementById('modal-video');
+  let embedUrl = '';
+
+  if (v.youtube_id) {
+    embedUrl = `https://www.youtube.com/embed/${encodeURIComponent(v.youtube_id)}?autoplay=1&rel=0&modestbranding=1`;
+  } else if (v.vimeo_id) {
+    embedUrl = `https://player.vimeo.com/video/${encodeURIComponent(v.vimeo_id)}?autoplay=1&color=c9b89a&title=0&byline=0&portrait=0`;
+  }
+
+  if (!embedUrl) return;
 
   box.innerHTML = `
-    <iframe
-      src="https://player.vimeo.com/video/${encodeURIComponent(vimeoId)}?autoplay=1&color=c9b89a&title=0&byline=0&portrait=0"
+    <iframe src="${embedUrl}"
       allow="autoplay; fullscreen; picture-in-picture"
       allowfullscreen
-      title="${esc(title)}">
+      title="${esc(v.title)}">
     </iframe>`;
 
   modal.classList.add('open');
@@ -215,57 +203,37 @@ function openVideo(vimeoId, title) {
 }
 
 function closeModal() {
-  const modal = document.getElementById('video-modal');
-  const box   = document.getElementById('modal-video');
-  modal.classList.remove('open');
-  box.innerHTML = ''; // Stop video playback
+  document.getElementById('video-modal').classList.remove('open');
+  document.getElementById('modal-video').innerHTML = '';
   document.body.style.overflow = '';
 }
 
 // ---- PHOTO LIGHTBOX ----
 
 function openPhoto(src, title) {
-  const lb   = document.getElementById('lightbox');
-  const img  = document.getElementById('lightbox-img');
-  const cap  = document.getElementById('lightbox-caption');
-
-  img.src       = src;
-  img.alt       = title;
-  cap.textContent = title;
-
-  lb.classList.add('open');
+  document.getElementById('lightbox-img').src       = src;
+  document.getElementById('lightbox-img').alt       = title;
+  document.getElementById('lightbox-caption').textContent = title;
+  document.getElementById('lightbox').classList.add('open');
   document.body.style.overflow = 'hidden';
 }
 
 function closeLightbox() {
-  const lb  = document.getElementById('lightbox');
-  const img = document.getElementById('lightbox-img');
-  lb.classList.remove('open');
-  img.src = '';
+  document.getElementById('lightbox').classList.remove('open');
+  document.getElementById('lightbox-img').src = '';
   document.body.style.overflow = '';
 }
 
 // ---- HELPERS ----
 
-// Escape for use inside HTML attribute values (single-quoted)
 function esc(str) {
   if (str == null) return '';
-  return String(str)
-    .replace(/\\/g, '\\\\')
-    .replace(/'/g, "\\'")
-    .replace(/"/g, '&quot;')
-    .replace(/\n/g, '');
+  return String(str).replace(/\\/g, '\\\\').replace(/'/g, "\\'").replace(/"/g, '&quot;').replace(/\n/g, '');
 }
 
-// Escape for use as visible HTML text
 function escHtml(str) {
   if (str == null) return '';
-  return String(str)
-    .replace(/&/g, '&amp;')
-    .replace(/</g, '&lt;')
-    .replace(/>/g, '&gt;')
-    .replace(/"/g, '&quot;');
+  return String(str).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
 }
 
-// ---- START ----
 init();

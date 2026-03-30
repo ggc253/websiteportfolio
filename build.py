@@ -3,67 +3,69 @@
 build.py — G.G. Cooper Portfolio Builder
 =========================================
 
-Run this script any time you add, remove, or reorder projects.
+Run this any time you add, remove, or reorder content.
 It reads your content/ folder and regenerates data.json.
 
-After running, commit and push to GitHub — your site updates automatically.
-
-USAGE
------
-  python build.py
+After running:
+  git add -A && git commit -m "Update content" && git push
 
 FOLDER STRUCTURE
 ----------------
   content/
-    Edit/
-      01_project-name.txt      ← video entry (number prefix = order)
-      02_another-project.txt
-    Directing/
-      01_film-title.txt
-    Photos/
-      01_photo-title.jpg       ← image file (jpg, jpeg, png, webp)
-      01_photo-title.txt       ← optional metadata for that photo
-    about.txt                  ← about page content
+    Featured/          ← 4 videos shown on the homepage
+      01_best-work.txt
+      02_second-best.txt
+      03_third.txt
+      04_fourth.txt
+    Edit/              ← All your editing work
+      01_project.txt
+    Directing/         ← All your directing work
+      01_film.txt
+    Photos/            ← Drop .jpg / .png files here
+      01_title.jpg
+      01_title.txt     ← optional metadata for the photo
+    about.txt          ← About page content
 
-VIDEO .TXT FORMAT
------------------
-  title: My Project Title
-  vimeo_id: 123456789
-  description: A short description of this piece.
-  client: Brand or Director Name
+VIDEO .TXT FILE FORMAT
+----------------------
+  title: Project Title
+  youtube_id: dQw4w9WgXcQ
+  description: Short description of this piece.
+  client: Brand or collaborator name
   year: 2024
 
-PHOTO .TXT FORMAT (optional, same base name as the image)
------------------
+  To find your YouTube video ID:
+  Go to the video on YouTube → look at the URL:
+  https://www.youtube.com/watch?v=dQw4w9WgXcQ
+                                   ^^^^^^^^^^^
+                               This part is the ID
+
+PHOTO .TXT FILE FORMAT (optional, same base name as image)
+----------------------------------------------------------
   title: Series Title
-  description: A photo series about something.
+  description: A photo series about...
   year: 2024
 
 ABOUT.TXT FORMAT
 ----------------
-  quote: The opening quote shown large at the top.
-  bio: Your biography. Can span multiple lines —
-    just indent continuation lines with two spaces.
+  quote: Your opening quote shown large.
+  bio: Your biography here.
+    Indent continuation lines with two spaces.
   email: gg@grahamcooper.co
-  vimeo: https://vimeo.com/yourprofile
   youtube: https://youtube.com/@yourchannel
   instagram: https://instagram.com/yourhandle
+  vimeo: https://vimeo.com/yourprofile
 """
 
 import json
 import os
 import shutil
 import sys
-import urllib.request
-import urllib.error
 from pathlib import Path
 
-# ---- CONFIGURATION ----
-
-CONTENT_DIR   = Path("content")
-OUTPUT_JSON   = Path("data.json")
-PHOTOS_OUT    = Path("photos")          # Where photo images are copied for the web
-FETCH_THUMBS  = True                    # Set False to skip Vimeo thumbnail fetching
+CONTENT_DIR  = Path("content")
+OUTPUT_JSON  = Path("data.json")
+PHOTOS_OUT   = Path("photos")
 
 IMAGE_EXTS = {".jpg", ".jpeg", ".png", ".webp", ".gif"}
 
@@ -71,14 +73,7 @@ IMAGE_EXTS = {".jpg", ".jpeg", ".png", ".webp", ".gif"}
 # ---- PARSING ----
 
 def parse_txt(filepath: Path) -> dict:
-    """
-    Parse a simple key: value file.
-    Multi-line values are supported by indenting continuation lines with spaces.
-
-      bio: First line
-        continuation of bio on second line
-        third line
-    """
+    """Parse a key: value text file. Indented lines continue the previous value."""
     result = {}
     current_key = None
     current_lines = []
@@ -89,24 +84,18 @@ def parse_txt(filepath: Path) -> dict:
 
     try:
         with open(filepath, encoding="utf-8") as f:
-            for raw_line in f:
-                line = raw_line.rstrip("\n")
-
-                # Lines starting with spaces/tabs are continuations
+            for raw in f:
+                line = raw.rstrip("\n")
+                if line.startswith("#"):
+                    continue
                 if current_key and (line.startswith(("  ", "\t")) or line == ""):
                     current_lines.append(line.strip())
                     continue
-
-                # New key: value pair
                 if ":" in line:
                     flush()
                     key, _, value = line.partition(":")
-                    current_key = key.strip().lower()
+                    current_key = key.strip().lower().replace(" ", "_")
                     current_lines = [value.strip()]
-                # Lines starting with # are comments
-                elif line.startswith("#"):
-                    continue
-
         flush()
     except OSError as e:
         print(f"  ⚠  Could not read {filepath}: {e}")
@@ -115,93 +104,49 @@ def parse_txt(filepath: Path) -> dict:
 
 
 def filename_to_title(stem: str) -> str:
-    """Convert a filename stem like '01_my-project-name' to 'My Project Name'."""
-    # Strip leading number prefix (e.g. "01_" or "1-")
+    """'01_my-project-name' → 'My Project Name'"""
     parts = stem.split("_", 1)
     if len(parts) == 2 and parts[0].isdigit():
         stem = parts[1]
-    else:
-        parts = stem.split("-", 1)
-        if len(parts) == 2 and parts[0].isdigit():
-            stem = parts[1]
-
     return stem.replace("-", " ").replace("_", " ").title()
 
 
-# ---- VIMEO THUMBNAILS ----
+# ---- THUMBNAIL ----
 
-_thumb_cache = {}
-
-def fetch_vimeo_thumbnail(vimeo_id: str) -> str:
-    """
-    Fetch the thumbnail URL for a Vimeo video via the oEmbed API.
-    Falls back to vumbnail.com if the API is unavailable.
-    """
-    if not vimeo_id or not FETCH_THUMBS:
-        return ""
-
-    if vimeo_id in _thumb_cache:
-        return _thumb_cache[vimeo_id]
-
-    fallback = f"https://vumbnail.com/{vimeo_id}.jpg"
-    try:
-        url = f"https://vimeo.com/api/oembed.json?url=https://vimeo.com/{vimeo_id}&width=800"
-        req = urllib.request.Request(url, headers={"User-Agent": "portfolio-builder/1.0"})
-        with urllib.request.urlopen(req, timeout=8) as resp:
-            data = json.loads(resp.read())
-            thumb = data.get("thumbnail_url", fallback)
-            # Upgrade to a larger thumbnail if possible
-            thumb = thumb.replace("_295x166", "_640x360").replace("_100x75", "_640x360")
-            _thumb_cache[vimeo_id] = thumb
-            return thumb
-    except Exception as e:
-        print(f"    Could not fetch thumbnail for {vimeo_id}: {e}")
-        _thumb_cache[vimeo_id] = fallback
-        return fallback
+def get_thumbnail(data: dict) -> str:
+    """Return a thumbnail URL for a video entry."""
+    if data.get("youtube_id"):
+        return f"https://img.youtube.com/vi/{data['youtube_id']}/maxresdefault.jpg"
+    if data.get("vimeo_id"):
+        return f"https://vumbnail.com/{data['vimeo_id']}.jpg"
+    return ""
 
 
 # ---- SECTION PROCESSORS ----
 
-def process_video_folder(folder: Path) -> list:
-    """Read all .txt files from a folder, sorted by filename."""
+def process_video_folder(folder: Path, label: str) -> list:
     if not folder.exists():
         return []
 
     txt_files = sorted(folder.glob("*.txt"))
     entries = []
 
-    for txt_file in txt_files:
-        data = parse_txt(txt_file)
-
-        # Fall back to filename-derived title
+    for f in txt_files:
+        data = parse_txt(f)
         if not data.get("title"):
-            data["title"] = filename_to_title(txt_file.stem)
-
-        # Fetch thumbnail
-        vimeo_id = data.get("vimeo_id", "").strip()
-        if vimeo_id:
-            print(f"    Fetching thumbnail for '{data['title']}' ({vimeo_id})…", end=" ", flush=True)
-            data["thumbnail"] = fetch_vimeo_thumbnail(vimeo_id)
-            print("done" if data["thumbnail"] else "skipped")
-        else:
-            data["thumbnail"] = ""
-
+            data["title"] = filename_to_title(f.stem)
+        data["thumbnail"] = get_thumbnail(data)
         entries.append(data)
-        print(f"  ✓  {data['title']}")
+        vid_id = data.get("youtube_id") or data.get("vimeo_id") or "—"
+        print(f"  ✓  {data['title']}  (id: {vid_id})")
 
     return entries
 
 
 def process_photos_folder(folder: Path) -> list:
-    """
-    Read image files from folder (sorted by filename).
-    For each image, look for a matching .txt file with metadata.
-    Copies images into the photos/ output directory.
-    """
     if not folder.exists():
         return []
 
-    # Collect all image files
     image_files = []
     for ext in IMAGE_EXTS:
         image_files.extend(folder.glob(f"*{ext}"))
@@ -211,32 +156,26 @@ def process_photos_folder(folder: Path) -> list:
     if not image_files:
         return []
 
-    # Ensure output directory exists
     PHOTOS_OUT.mkdir(exist_ok=True)
-
     entries = []
+
     for img in image_files:
-        # Copy to web-accessible location
         dest = PHOTOS_OUT / img.name
         shutil.copy2(img, dest)
-
-        # Load metadata if available
         meta_file = img.with_suffix(".txt")
         data = parse_txt(meta_file) if meta_file.exists() else {}
-
         if not data.get("title"):
             data["title"] = filename_to_title(img.stem)
-
         data["src"] = f"photos/{img.name}"
         entries.append(data)
-        print(f"  ✓  {data['title']}  →  {dest}")
+        print(f"  ✓  {data['title']}")
 
     return entries
 
 
 def process_about(about_file: Path) -> dict:
     if not about_file.exists():
-        print("  ⚠  content/about.txt not found — using empty defaults.")
+        print("  ⚠  content/about.txt not found — using defaults.")
         return {}
     data = parse_txt(about_file)
     print(f"  ✓  About page loaded")
@@ -247,56 +186,57 @@ def process_about(about_file: Path) -> dict:
 
 def main():
     print()
-    print("=" * 52)
+    print("=" * 54)
     print("  G.G. COOPER — Portfolio Builder")
-    print("=" * 52)
-    print()
+    print("=" * 54)
 
-    # Make sure we're running from the right directory
     if not CONTENT_DIR.exists():
         print("ERROR: 'content/' folder not found.")
-        print("Make sure you're running this script from your website folder.")
+        print("Run this script from your website folder.")
         sys.exit(1)
 
     output = {}
 
-    print("Edit:")
-    output["edit"] = process_video_folder(CONTENT_DIR / "Edit")
+    print("\nFeatured (Homepage):")
+    output["featured"] = process_video_folder(CONTENT_DIR / "Featured", "Featured")
+    if len(output["featured"]) > 4:
+        print(f"  ⚠  Only first 4 featured videos will show on the homepage.")
+        output["featured"] = output["featured"][:4]
+    if not output["featured"]:
+        print("  (no entries yet)")
+
+    print("\nEdit:")
+    output["edit"] = process_video_folder(CONTENT_DIR / "Edit", "Edit")
     if not output["edit"]:
-        print("  (no entries)")
+        print("  (no entries yet)")
 
-    print()
-    print("Directing:")
-    output["directing"] = process_video_folder(CONTENT_DIR / "Directing")
+    print("\nDirecting:")
+    output["directing"] = process_video_folder(CONTENT_DIR / "Directing", "Directing")
     if not output["directing"]:
-        print("  (no entries)")
+        print("  (no entries yet)")
 
-    print()
-    print("Photos:")
+    print("\nPhotos:")
     output["photos"] = process_photos_folder(CONTENT_DIR / "Photos")
     if not output["photos"]:
-        print("  (no photos — drop .jpg files into content/Photos/ to add them)")
+        print("  (no photos yet — drop .jpg files into content/Photos/)")
 
-    print()
-    print("About:")
+    print("\nAbout:")
     output["about"] = process_about(CONTENT_DIR / "about.txt")
 
-    # Write output
     with open(OUTPUT_JSON, "w", encoding="utf-8") as f:
         json.dump(output, f, indent=2, ensure_ascii=False)
 
     print()
-    print("=" * 52)
+    print("=" * 54)
     print(f"  ✅  data.json generated!")
+    print(f"      Featured:  {len(output['featured'])} / 4 videos")
     print(f"      Edit:      {len(output['edit'])} project(s)")
     print(f"      Directing: {len(output['directing'])} project(s)")
     print(f"      Photos:    {len(output['photos'])} photo(s)")
     print()
-    print("  Next steps:")
-    print("  1. Review data.json to make sure everything looks right")
-    print("  2. git add -A && git commit -m 'Update content'")
-    print("  3. git push  →  your site updates automatically!")
-    print("=" * 52)
+    print("  To publish:")
+    print("  git add -A && git commit -m 'Update content' && git push")
+    print("=" * 54)
     print()
 
 

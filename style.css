@@ -349,6 +349,19 @@ body.about-mode .nav-link.active {
   color: rgba(255,255,255,0.55);
 }
 
+/* ---- FEATURED (HOME) GRID — 2×2 ---- */
+
+.featured-grid {
+  grid-template-columns: repeat(2, 1fr);
+  gap: 1.25rem;
+}
+
+@media (max-width: 720px) {
+  .featured-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
 /* ---- PHOTO GRID ---- */
 
 .photo-grid {

@@ -1,0 +1,5 @@
+title: Second Pick
+youtube_id: REPLACE_WITH_VIDEO_ID
+description:
+client:
+year: 2024
