@@ -1,0 +1,104 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="G.G. Cooper — Director & Editor">
+  <title>G.G. COOPER</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+  <!-- NAVIGATION -->
+  <nav class="nav" id="nav">
+    <a href="#edit" class="nav-logo">G.G. COOPER</a>
+    <div class="nav-links">
+      <a href="#edit"      class="nav-link" data-section="edit">Edit</a>
+      <a href="#directing" class="nav-link" data-section="directing">Directing</a>
+      <a href="#photos"    class="nav-link" data-section="photos">Photos</a>
+      <a href="#about"     class="nav-link" data-section="about">About</a>
+    </div>
+  </nav>
+
+  <!-- TICKER -->
+  <div class="ticker-wrap" id="ticker">
+    <div class="ticker-inner">
+      <div class="ticker-set">
+        <span>DIRECTOR</span><span class="dot"> &middot; </span>
+        <span>EDITOR</span><span class="dot"> &middot; </span>
+        <span>DIRECTOR</span><span class="dot"> &middot; </span>
+        <span>EDITOR</span><span class="dot"> &middot; </span>
+        <span>DIRECTOR</span><span class="dot"> &middot; </span>
+        <span>EDITOR</span><span class="dot"> &middot; </span>
+        <span>DIRECTOR</span><span class="dot"> &middot; </span>
+        <span>EDITOR</span><span class="dot"> &middot; </span>
+      </div>
+      <div class="ticker-set" aria-hidden="true">
+        <span>DIRECTOR</span><span class="dot"> &middot; </span>
+        <span>EDITOR</span><span class="dot"> &middot; </span>
+        <span>DIRECTOR</span><span class="dot"> &middot; </span>
+        <span>EDITOR</span><span class="dot"> &middot; </span>
+        <span>DIRECTOR</span><span class="dot"> &middot; </span>
+        <span>EDITOR</span><span class="dot"> &middot; </span>
+        <span>DIRECTOR</span><span class="dot"> &middot; </span>
+        <span>EDITOR</span><span class="dot"> &middot; </span>
+      </div>
+    </div>
+  </div>
+
+  <!-- MAIN CONTENT -->
+  <main id="main">
+
+    <!-- EDIT SECTION -->
+    <section id="edit" class="section work-section">
+      <h1 class="section-title">Edit</h1>
+      <div class="video-grid" id="edit-grid">
+        <div class="loading">Loading&hellip;</div>
+      </div>
+    </section>
+
+    <!-- DIRECTING SECTION -->
+    <section id="directing" class="section work-section">
+      <h1 class="section-title">Directing</h1>
+      <div class="video-grid" id="directing-grid">
+        <div class="loading">Loading&hellip;</div>
+      </div>
+    </section>
+
+    <!-- PHOTOS SECTION -->
+    <section id="photos" class="section work-section">
+      <h1 class="section-title">Photos</h1>
+      <div class="photo-grid" id="photos-grid">
+        <div class="loading">Loading&hellip;</div>
+      </div>
+    </section>
+
+    <!-- ABOUT SECTION -->
+    <section id="about" class="section about-section">
+      <div id="about-content" class="about-content"></div>
+    </section>
+
+  </main>
+
+  <!-- VIDEO MODAL -->
+  <div class="modal" id="video-modal" role="dialog" aria-modal="true">
+    <div class="modal-backdrop" id="modal-backdrop"></div>
+    <div class="modal-box">
+      <button class="modal-close" id="modal-close" aria-label="Close">&#x2715;</button>
+      <div class="modal-video" id="modal-video"></div>
+    </div>
+  </div>
+
+  <!-- PHOTO LIGHTBOX -->
+  <div class="lightbox" id="lightbox" role="dialog" aria-modal="true">
+    <div class="lightbox-backdrop" id="lightbox-backdrop"></div>
+    <div class="lightbox-box">
+      <button class="lightbox-close" id="lightbox-close" aria-label="Close">&#x2715;</button>
+      <img id="lightbox-img" src="" alt="">
+      <p id="lightbox-caption"></p>
+    </div>
+  </div>
+
+  <script src="script.js"></script>
+</body>
+</html>

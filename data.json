@@ -1,0 +1,31 @@
+{
+  "edit": [
+    {
+      "title": "Sample Edit Project",
+      "vimeo_id": "76979871",
+      "description": "Replace this with your real edit project. Rename this file starting with a number to control its order (e.g. 01_project-name.txt).",
+      "client": "Sample Client",
+      "year": "2024",
+      "thumbnail": "https://vumbnail.com/76979871.jpg"
+    }
+  ],
+  "directing": [
+    {
+      "title": "Sample Film",
+      "vimeo_id": "76979871",
+      "description": "Replace this with your real directing project. The number at the start of the filename controls its order.",
+      "client": "",
+      "year": "2024",
+      "thumbnail": "https://vumbnail.com/76979871.jpg"
+    }
+  ],
+  "photos": [],
+  "about": {
+    "quote": "Interested in what people keep hidden.",
+    "bio": "G.G. Cooper is a director and editor. He holds a Master's Degree from the David Lynch School of Cinematic Arts.\n\nHis work spans commercial and narrative filmmaking with a focus on character-driven storytelling.",
+    "email": "gg@grahamcooper.co",
+    "vimeo": "",
+    "youtube": "",
+    "instagram": ""
+  }
+}
