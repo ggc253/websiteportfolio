@@ -21,7 +21,6 @@
   --border:        rgba(244, 241, 223, 0.09);
   --border-dark:   rgba(28, 43, 28, 0.12);
   --font:          'Helvetica Neue', Helvetica, Arial, sans-serif;
-  --font-display:  'Fraunces', Georgia, 'Times New Roman', serif;
   --nav-h:         54px;
   --ticker-h:      38px;
   --work-top:      calc(var(--nav-h) + var(--ticker-h));
@@ -249,10 +248,9 @@ body.about-mode .nav-link.active {
   display: flex;
   align-items: center;
   gap: 1.1rem;
-  font-family: var(--font-display);
   font-size: clamp(3rem, 7vw, 6rem);
-  font-weight: 600;
-  letter-spacing: 0.02em;
+  font-weight: 700;
+  letter-spacing: 0.06em;
   text-transform: uppercase;
   line-height: 1;
   color: var(--text);
@@ -481,12 +479,11 @@ body.about-mode .nav-link.active {
 }
 
 .about-quote {
-  font-family: Georgia, 'Times New Roman', serif;
-  font-style: normal;
   font-size: clamp(2rem, 4.5vw, 3.4rem);
-  font-weight: 400;
-  letter-spacing: 0;
-  line-height: 1.2;
+  font-weight: 700;
+  letter-spacing: 0.025em;
+  line-height: 1.12;
+  text-transform: uppercase;
   color: var(--text-dark);
   margin-bottom: 2.5rem;
 }
