@@ -3,7 +3,7 @@
    ============================================================ */
 
 let siteData = null;
-const VALID_SECTIONS = ['home', 'edit', 'directing', 'photos', 'about'];
+const VALID_SECTIONS = ['home', 'edit', 'directing', 'about'];
 
 // ---- INIT ----
 
@@ -68,7 +68,6 @@ function renderSection(section) {
     home:      () => renderVideoGrid('home-grid',      siteData.featured  || []),
     edit:      () => renderVideoGrid('edit-grid',      siteData.edit      || []),
     directing: () => renderVideoGrid('directing-grid', siteData.directing || []),
-    photos:    () => renderPhotoGrid('photos-grid',    siteData.photos    || []),
     about:     () => renderAbout(siteData.about || {}),
   })[section]?.();
 }

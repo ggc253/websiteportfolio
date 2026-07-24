@@ -1,0 +1,5 @@
+title: Am I Crazy? CTE Documentary
+youtube_id: XMexYGNz7p4
+description:
+client:
+year: 2023

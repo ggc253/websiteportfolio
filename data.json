@@ -1,20 +1,20 @@
 {
   "featured": [
     {
-      "title": "Your Best Work",
-      "youtube_id": "REPLACE_WITH_VIDEO_ID",
-      "description": "Your flagship piece.",
-      "client": "",
-      "year": "2024",
-      "thumbnail": "https://img.youtube.com/vi/REPLACE_WITH_VIDEO_ID/maxresdefault.jpg"
+      "title": "Sonos Spec Ad",
+      "youtube_id": "jqEi_6IwNn8",
+      "description": "",
+      "client": "Spec",
+      "year": "2025",
+      "thumbnail": "https://img.youtube.com/vi/jqEi_6IwNn8/maxresdefault.jpg"
     },
     {
-      "title": "Second Pick",
-      "youtube_id": "REPLACE_WITH_VIDEO_ID",
+      "title": "So Far So Good | Short Film",
+      "youtube_id": "XLTsCWq8BFE",
       "description": "",
       "client": "",
-      "year": "2024",
-      "thumbnail": "https://img.youtube.com/vi/REPLACE_WITH_VIDEO_ID/maxresdefault.jpg"
+      "year": "2023",
+      "thumbnail": "https://img.youtube.com/vi/XLTsCWq8BFE/maxresdefault.jpg"
     },
     {
       "title": "Am I Crazy? CTE Documentary",
@@ -25,32 +25,40 @@
       "thumbnail": "https://img.youtube.com/vi/XMexYGNz7p4/maxresdefault.jpg"
     },
     {
-      "title": "Fourth Pick",
-      "youtube_id": "REPLACE_WITH_VIDEO_ID",
+      "title": "Bubble Butt | Short Film",
+      "youtube_id": "thI---iVuYI",
       "description": "",
       "client": "",
-      "year": "2024",
-      "thumbnail": "https://img.youtube.com/vi/REPLACE_WITH_VIDEO_ID/maxresdefault.jpg"
+      "year": "2018",
+      "thumbnail": "https://img.youtube.com/vi/thI---iVuYI/maxresdefault.jpg"
     }
   ],
   "edit": [
     {
-      "title": "Sample Edit Project",
-      "vimeo_id": "76979871",
-      "description": "Replace this with your real edit project. Rename this file starting with a number to control its order (e.g. 01_project-name.txt).",
-      "client": "Sample Client",
-      "year": "2024",
-      "thumbnail": "https://vumbnail.com/76979871.jpg"
+      "title": "Am I Crazy? CTE Documentary",
+      "youtube_id": "XMexYGNz7p4",
+      "description": "",
+      "client": "",
+      "year": "2023",
+      "thumbnail": "https://img.youtube.com/vi/XMexYGNz7p4/maxresdefault.jpg"
     }
   ],
   "directing": [
     {
-      "title": "Sample Film",
-      "vimeo_id": "76979871",
-      "description": "Replace this with your real directing project. The number at the start of the filename controls its order.",
+      "title": "So Far So Good | Short Film",
+      "youtube_id": "XLTsCWq8BFE",
+      "description": "",
       "client": "",
-      "year": "2024",
-      "thumbnail": "https://vumbnail.com/76979871.jpg"
+      "year": "2023",
+      "thumbnail": "https://img.youtube.com/vi/XLTsCWq8BFE/maxresdefault.jpg"
+    },
+    {
+      "title": "Bubble Butt | Short Film",
+      "youtube_id": "thI---iVuYI",
+      "description": "",
+      "client": "",
+      "year": "2018",
+      "thumbnail": "https://img.youtube.com/vi/thI---iVuYI/maxresdefault.jpg"
     }
   ],
   "photos": [],

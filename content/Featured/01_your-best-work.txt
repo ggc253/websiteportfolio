@@ -1,5 +1,5 @@
-title: Your Best Work
-youtube_id: REPLACE_WITH_VIDEO_ID
-description: Your flagship piece.
-client:
-year: 2024
+title: Sonos Spec Ad
+youtube_id: jqEi_6IwNn8
+description:
+client: Spec
+year: 2025

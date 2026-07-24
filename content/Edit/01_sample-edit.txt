@@ -1,5 +1,0 @@
-title: Sample Edit Project
-vimeo_id: 76979871
-description: Replace this with your real edit project. Rename this file starting with a number to control its order (e.g. 01_project-name.txt).
-client: Sample Client
-year: 2024

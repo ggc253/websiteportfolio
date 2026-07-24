@@ -1,5 +1,0 @@
-title: Sample Film
-vimeo_id: 76979871
-description: Replace this with your real directing project. The number at the start of the filename controls its order.
-client:
-year: 2024
