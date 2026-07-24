@@ -88,9 +88,11 @@ function renderVideoGrid(containerId, videos) {
     const metaParts = [v.client, v.year].filter(Boolean);
     const meta = metaParts.join(' \u2014 ');
 
+    const ytId = v.youtube_id ? esc(v.youtube_id) : '';
     const thumbHtml = thumb
       ? `<img class="video-thumb" src="${esc(thumb)}" alt="${esc(v.title)}" loading="lazy"
-             onerror="this.src='${esc(getFallbackThumb(v))}';">`
+             onerror="this.src='${esc(getFallbackThumb(v))}';"
+             ${ytId ? `onload="upgradeYoutubeThumb(this,'${ytId}')"` : ''}>`
       : `<div class="video-thumb" style="background:#181818;position:absolute;inset:0;"></div>`;
 
     return `
@@ -124,6 +126,23 @@ function getFallbackThumb(v) {
   // Last-resort fallback if hqdefault somehow fails too
   if (v.youtube_id) return `https://img.youtube.com/vi/${v.youtube_id}/0.jpg`;
   return '';
+}
+
+// Try upgrading a displayed hqdefault (480x360) thumbnail to the sharper
+// maxresdefault (1280x720) if one exists. YouTube doesn't always return a
+// real 404 for videos without a maxres image — sometimes it's a 200 with a
+// tiny 120x90 gray placeholder — so we check the actual decoded width
+// instead of relying on the error event.
+function upgradeYoutubeThumb(imgEl, youtubeId) {
+  if (!youtubeId || imgEl.dataset.upgraded) return;
+  imgEl.dataset.upgraded = '1';
+  const hiRes = new Image();
+  hiRes.onload = () => {
+    if (hiRes.naturalWidth > 120) {
+      imgEl.src = hiRes.src;
+    }
+  };
+  hiRes.src = `https://img.youtube.com/vi/${youtubeId}/maxresdefault.jpg`;
 }
 
 // ---- PHOTO GRID ----

@@ -1,0 +1,5 @@
+title: Sonos Spec Ad
+youtube_id: jqEi_6IwNn8
+description:
+client: Spec
+year: 2025
