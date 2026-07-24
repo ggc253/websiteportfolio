@@ -12,11 +12,10 @@ After running:
 FOLDER STRUCTURE
 ----------------
   content/
-    Featured/          ← 4 videos shown on the homepage
+    Featured/          ← videos shown on the homepage (any number)
       01_best-work.txt
       02_second-best.txt
       03_third.txt
-      04_fourth.txt
     Edit/              ← All your editing work
       01_project.txt
     Directing/         ← All your directing work
@@ -199,9 +198,6 @@ def main():
 
     print("\nFeatured (Homepage):")
     output["featured"] = process_video_folder(CONTENT_DIR / "Featured", "Featured")
-    if len(output["featured"]) > 4:
-        print(f"  ⚠  Only first 4 featured videos will show on the homepage.")
-        output["featured"] = output["featured"][:4]
     if not output["featured"]:
         print("  (no entries yet)")
 
@@ -229,7 +225,7 @@ def main():
     print()
     print("=" * 54)
     print(f"  ✅  data.json generated!")
-    print(f"      Featured:  {len(output['featured'])} / 4 videos")
+    print(f"      Featured:  {len(output['featured'])} video(s)")
     print(f"      Edit:      {len(output['edit'])} project(s)")
     print(f"      Directing: {len(output['directing'])} project(s)")
     print(f"      Photos:    {len(output['photos'])} photo(s)")
