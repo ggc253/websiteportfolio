@@ -88,7 +88,10 @@ function renderVideoGrid(containerId, videos) {
     const metaParts = [v.client, v.year].filter(Boolean);
     const meta = metaParts.join(' \u2014 ');
 
-    const ytId = v.youtube_id ? esc(v.youtube_id) : '';
+    // Only auto-upgrade to maxresdefault when we're using the generated
+    // YouTube thumbnail — never touch a manually-set custom thumbnail.
+    const isAutoYoutubeThumb = thumb.includes('img.youtube.com');
+    const ytId = (isAutoYoutubeThumb && v.youtube_id) ? esc(v.youtube_id) : '';
     const thumbHtml = thumb
       ? `<img class="video-thumb" src="${esc(thumb)}" alt="${esc(v.title)}" loading="lazy"
              onerror="this.src='${esc(getFallbackThumb(v))}';"
@@ -116,6 +119,12 @@ function renderVideoGrid(containerId, videos) {
 // ---- THUMBNAIL HELPERS ----
 
 function getThumb(v) {
+  // A manually-set thumbnail (custom override) always wins over the
+  // auto-generated YouTube/Vimeo one, even when youtube_id is present
+  // (youtube_id is still needed separately for video playback).
+  if (v.thumbnail && !v.thumbnail.includes('img.youtube.com') && !v.thumbnail.includes('vumbnail.com')) {
+    return v.thumbnail;
+  }
   if (v.youtube_id) return `https://img.youtube.com/vi/${v.youtube_id}/hqdefault.jpg`;
   if (v.thumbnail)  return v.thumbnail;
   if (v.vimeo_id)   return `https://vumbnail.com/${v.vimeo_id}.jpg`;
