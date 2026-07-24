@@ -95,10 +95,10 @@ function renderVideoGrid(containerId, videos) {
 
     return `
       <div class="video-card"
-           onclick="openVideo(${JSON.stringify(v)})"
+           onclick="openVideo(${attrJson(v)})"
            role="button" tabindex="0"
            aria-label="Play ${esc(v.title)}"
-           onkeydown="if(event.key==='Enter')openVideo(${JSON.stringify(v)})">
+           onkeydown="if(event.key==='Enter')openVideo(${attrJson(v)})">
         ${thumbHtml}
         <div class="video-overlay">
           <div class="video-play" aria-hidden="true"></div>
@@ -114,15 +114,15 @@ function renderVideoGrid(containerId, videos) {
 // ---- THUMBNAIL HELPERS ----
 
 function getThumb(v) {
-  if (v.thumbnail) return v.thumbnail;
-  if (v.youtube_id) return `https://img.youtube.com/vi/${v.youtube_id}/maxresdefault.jpg`;
+  if (v.youtube_id) return `https://img.youtube.com/vi/${v.youtube_id}/hqdefault.jpg`;
+  if (v.thumbnail)  return v.thumbnail;
   if (v.vimeo_id)   return `https://vumbnail.com/${v.vimeo_id}.jpg`;
   return '';
 }
 
 function getFallbackThumb(v) {
-  // YouTube fallback if maxresdefault 404s
-  if (v.youtube_id) return `https://img.youtube.com/vi/${v.youtube_id}/hqdefault.jpg`;
+  // Last-resort fallback if hqdefault somehow fails too
+  if (v.youtube_id) return `https://img.youtube.com/vi/${v.youtube_id}/0.jpg`;
   return '';
 }
 
@@ -228,6 +228,13 @@ function closeLightbox() {
 function esc(str) {
   if (str == null) return '';
   return String(str).replace(/\\/g, '\\\\').replace(/'/g, "\\'").replace(/"/g, '&quot;').replace(/\n/g, '');
+}
+
+function attrJson(obj) {
+  // Safe to embed inside a double-quoted HTML attribute: encode the JSON's
+  // own double quotes as &quot; so the browser decodes them back to " before
+  // the string is parsed as JS, instead of letting them close the attribute early.
+  return JSON.stringify(obj).replace(/"/g, '&quot;');
 }
 
 function escHtml(str) {

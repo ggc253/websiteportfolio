@@ -116,7 +116,7 @@ def filename_to_title(stem: str) -> str:
 def get_thumbnail(data: dict) -> str:
     """Return a thumbnail URL for a video entry."""
     if data.get("youtube_id"):
-        return f"https://img.youtube.com/vi/{data['youtube_id']}/maxresdefault.jpg"
+        return f"https://img.youtube.com/vi/{data['youtube_id']}/hqdefault.jpg"
     if data.get("vimeo_id"):
         return f"https://vumbnail.com/{data['vimeo_id']}.jpg"
     return ""
