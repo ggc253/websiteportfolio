@@ -1,0 +1,5 @@
+title: Blaq Diaries: The Story of Blaq Tuxedo
+youtube_id: rxRKXn65uF4
+description:
+client: Blaq Tuxedo
+year: 2025
