@@ -9,15 +9,15 @@
 }
 
 :root {
-  --bg:          #0e0e0e;
-  --bg-light:    #f0ece6;
-  --text:        #f0ece6;
-  --text-dim:    rgba(240, 236, 230, 0.4);
-  --text-dark:   #111111;
-  --text-dark-dim: rgba(17, 17, 17, 0.45);
-  --accent:      #c9b89a;
-  --border:      rgba(240, 236, 230, 0.09);
-  --border-dark: rgba(17, 17, 17, 0.12);
+  --bg:          #0d1a14;
+  --bg-light:    #f3e8da;
+  --text:        #f2ede2;
+  --text-dim:    rgba(242, 237, 226, 0.42);
+  --text-dark:   #17261e;
+  --text-dark-dim: rgba(23, 38, 30, 0.5);
+  --accent:      #c9a769;
+  --border:      rgba(242, 237, 226, 0.09);
+  --border-dark: rgba(23, 38, 30, 0.12);
   --font:        'Helvetica Neue', Helvetica, Arial, sans-serif;
   --nav-h:       54px;
   --ticker-h:    38px;
@@ -110,7 +110,7 @@ body.about-mode .nav-logo {
   left: 0;
   right: 0;
   height: 1px;
-  background: var(--text);
+  background: var(--accent);
   transform: scaleX(0);
   transform-origin: left;
   transition: transform 0.25s var(--ease), background 0.45s var(--ease);
@@ -131,7 +131,7 @@ body.about-mode .nav-link {
 }
 
 body.about-mode .nav-link::after {
-  background: var(--text-dark);
+  background: var(--accent);
 }
 
 body.about-mode .nav-link:hover,
@@ -260,6 +260,12 @@ body.about-mode .nav-link.active {
   overflow: hidden;
   background: #181818;
   aspect-ratio: 16 / 9;
+  border-radius: 3px;
+  transition: box-shadow 0.35s var(--ease);
+}
+
+.video-card:hover {
+  box-shadow: 0 18px 40px rgba(0, 0, 0, 0.4);
 }
 
 .video-thumb {
@@ -532,6 +538,9 @@ body.about-mode .nav-link.active {
   width: 90vw;
   max-width: 1120px;
   aspect-ratio: 16 / 9;
+  border-radius: 6px;
+  overflow: hidden;
+  box-shadow: 0 30px 80px rgba(0, 0, 0, 0.55);
 }
 
 .modal-close {
