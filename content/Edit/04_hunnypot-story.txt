@@ -1,5 +1,6 @@
 title: The Hunnypot Story - Official Documentary Trailer
 youtube_id: 1apUVd00LZo
+thumbnail: thumbs/hunnypotthumbnail.png
 description:
 client: MediaLiberated
 year: 2025
