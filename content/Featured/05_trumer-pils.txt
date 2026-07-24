@@ -1,5 +1,6 @@
 title: Trumer Pils Summer Ad
 youtube_id: tiAn1cn9_Uk
+thumbnail: thumbs/trumerthumbnail.png
 description:
 client: Trumer Pils
 year: 2024

@@ -1,5 +1,6 @@
 title: The Arc of an Athlete
 youtube_id: YLqHp0LKS8U
+thumbnail: thumbs/arcofathletethumbnail.png
 description:
 client:
 year: 2023

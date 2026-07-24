@@ -19,10 +19,10 @@
     {
       "title": "Am I Crazy? CTE Documentary",
       "youtube_id": "XMexYGNz7p4",
+      "thumbnail": "thumbs/ctethumbnail.png",
       "description": "",
       "client": "",
-      "year": "2023",
-      "thumbnail": "https://img.youtube.com/vi/XMexYGNz7p4/hqdefault.jpg"
+      "year": "2023"
     },
     {
       "title": "Bubble Butt | Short Film",
@@ -35,28 +35,28 @@
     {
       "title": "Trumer Pils Summer Ad",
       "youtube_id": "tiAn1cn9_Uk",
+      "thumbnail": "thumbs/trumerthumbnail.png",
       "description": "",
       "client": "Trumer Pils",
-      "year": "2024",
-      "thumbnail": "https://img.youtube.com/vi/tiAn1cn9_Uk/hqdefault.jpg"
+      "year": "2024"
     },
     {
       "title": "The Arc of an Athlete",
       "youtube_id": "YLqHp0LKS8U",
+      "thumbnail": "thumbs/arcofathletethumbnail.png",
       "description": "",
       "client": "",
-      "year": "2023",
-      "thumbnail": "https://img.youtube.com/vi/YLqHp0LKS8U/hqdefault.jpg"
+      "year": "2023"
     }
   ],
   "edit": [
     {
       "title": "Am I Crazy? CTE Documentary",
       "youtube_id": "XMexYGNz7p4",
+      "thumbnail": "thumbs/ctethumbnail.png",
       "description": "",
       "client": "",
-      "year": "2023",
-      "thumbnail": "https://img.youtube.com/vi/XMexYGNz7p4/hqdefault.jpg"
+      "year": "2023"
     },
     {
       "title": "Blaq Diaries: The Story of Blaq Tuxedo",
@@ -69,10 +69,10 @@
     {
       "title": "The Arc of an Athlete",
       "youtube_id": "YLqHp0LKS8U",
+      "thumbnail": "thumbs/arcofathletethumbnail.png",
       "description": "",
       "client": "",
-      "year": "2023",
-      "thumbnail": "https://img.youtube.com/vi/YLqHp0LKS8U/hqdefault.jpg"
+      "year": "2023"
     },
     {
       "title": "The Hunnypot Story - Official Documentary Trailer",
@@ -85,10 +85,10 @@
     {
       "title": "Trumer Pils Summer Ad",
       "youtube_id": "tiAn1cn9_Uk",
+      "thumbnail": "thumbs/trumerthumbnail.png",
       "description": "",
       "client": "Trumer Pils",
-      "year": "2024",
-      "thumbnail": "https://img.youtube.com/vi/tiAn1cn9_Uk/hqdefault.jpg"
+      "year": "2024"
     }
   ],
   "directing": [

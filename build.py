@@ -65,8 +65,31 @@ from pathlib import Path
 CONTENT_DIR  = Path("content")
 OUTPUT_JSON  = Path("data.json")
 PHOTOS_OUT   = Path("photos")
+THUMBS_OUT   = Path("thumbs")
 
 IMAGE_EXTS = {".jpg", ".jpeg", ".png", ".webp", ".gif"}
+
+
+def copy_custom_thumbnails() -> None:
+    """Copy any image files sitting alongside video .txt files (in Featured/
+    Edit/Directing) into thumbs/ so they can be served and referenced via a
+    `thumbnail: thumbs/filename.png` line in the matching .txt file."""
+    copied = []
+    for folder in (CONTENT_DIR / "Featured", CONTENT_DIR / "Edit", CONTENT_DIR / "Directing"):
+        if not folder.exists():
+            continue
+        images = []
+        for ext in IMAGE_EXTS:
+            images.extend(folder.glob(f"*{ext}"))
+            images.extend(folder.glob(f"*{ext.upper()}"))
+        for img in sorted(set(images)):
+            THUMBS_OUT.mkdir(exist_ok=True)
+            shutil.copy2(img, THUMBS_OUT / img.name)
+            copied.append(img.name)
+    if copied:
+        print("\nCustom thumbnails copied to thumbs/:")
+        for name in copied:
+            print(f"  ✓  {name}")
 
 
 # ---- PARSING ----
@@ -134,7 +157,8 @@ def process_video_folder(folder: Path, label: str) -> list:
         data = parse_txt(f)
         if not data.get("title"):
             data["title"] = filename_to_title(f.stem)
-        data["thumbnail"] = get_thumbnail(data)
+        if not data.get("thumbnail"):
+            data["thumbnail"] = get_thumbnail(data)
         entries.append(data)
         vid_id = data.get("youtube_id") or data.get("vimeo_id") or "—"
         print(f"  ✓  {data['title']}  (id: {vid_id})")
@@ -195,6 +219,8 @@ def main():
         sys.exit(1)
 
     output = {}
+
+    copy_custom_thumbnails()
 
     print("\nFeatured (Homepage):")
     output["featured"] = process_video_folder(CONTENT_DIR / "Featured", "Featured")
