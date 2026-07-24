@@ -9,20 +9,23 @@
 }
 
 :root {
-  --bg:          #0d1a14;
-  --bg-light:    #f3e8da;
-  --text:        #f2ede2;
-  --text-dim:    rgba(242, 237, 226, 0.42);
-  --text-dark:   #17261e;
-  --text-dark-dim: rgba(23, 38, 30, 0.5);
-  --accent:      #c9a769;
-  --border:      rgba(242, 237, 226, 0.09);
-  --border-dark: rgba(23, 38, 30, 0.12);
-  --font:        'Helvetica Neue', Helvetica, Arial, sans-serif;
-  --nav-h:       54px;
-  --ticker-h:    38px;
-  --work-top:    calc(var(--nav-h) + var(--ticker-h));
-  --ease:        cubic-bezier(0.25, 0.1, 0.25, 1);
+  --bg:            #141f14;   /* dark, derived from Fern */
+  --bg-light:      #e9e3b4;   /* Vanilla Custard */
+  --text:          #f4f1df;
+  --text-dim:      rgba(244, 241, 223, 0.42);
+  --text-dark:     #1c2b1c;   /* dark Fern-black, for text on the light page */
+  --text-dark-dim: rgba(28, 43, 28, 0.5);
+  --accent:        #496f49;   /* Fern — primary signature color */
+  --accent-warm:   #b80c09;   /* Brick Ember — used sparingly */
+  --accent-cool:   #477998;   /* Cerulean — used sparingly */
+  --border:        rgba(244, 241, 223, 0.09);
+  --border-dark:   rgba(28, 43, 28, 0.12);
+  --font:          'Helvetica Neue', Helvetica, Arial, sans-serif;
+  --font-display:  'Fraunces', Georgia, 'Times New Roman', serif;
+  --nav-h:         54px;
+  --ticker-h:      38px;
+  --work-top:      calc(var(--nav-h) + var(--ticker-h));
+  --ease:          cubic-bezier(0.25, 0.1, 0.25, 1);
 }
 
 /* ---- BASE ---- */
@@ -38,6 +41,19 @@ body {
   min-height: 100vh;
   -webkit-font-smoothing: antialiased;
   transition: background 0.45s var(--ease), color 0.45s var(--ease);
+  position: relative;
+}
+
+/* Subtle film-grain texture over the whole page */
+body::before {
+  content: '';
+  position: fixed;
+  inset: 0;
+  z-index: 9999;
+  pointer-events: none;
+  opacity: 0.05;
+  mix-blend-mode: overlay;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='180' height='180'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
 }
 
 body.about-mode {
@@ -230,14 +246,27 @@ body.about-mode .nav-link.active {
 /* ---- SECTION TITLE ---- */
 
 .section-title {
+  display: flex;
+  align-items: center;
+  gap: 1.1rem;
+  font-family: var(--font-display);
   font-size: clamp(3rem, 7vw, 6rem);
-  font-weight: 700;
-  letter-spacing: 0.06em;
+  font-weight: 600;
+  letter-spacing: 0.02em;
   text-transform: uppercase;
   line-height: 1;
   color: var(--text);
   margin-bottom: 2.75rem;
   transition: color 0.45s var(--ease);
+}
+
+.section-title::before {
+  content: '';
+  display: inline-block;
+  flex-shrink: 0;
+  width: 5px;
+  height: 0.72em;
+  background: var(--accent);
 }
 
 /* ---- VIDEO GRID ---- */
@@ -265,7 +294,7 @@ body.about-mode .nav-link.active {
 }
 
 .video-card:hover {
-  box-shadow: 0 18px 40px rgba(0, 0, 0, 0.4);
+  box-shadow: 0 18px 40px rgba(10, 20, 12, 0.5);
 }
 
 .video-thumb {
@@ -330,12 +359,19 @@ body.about-mode .nav-link.active {
 
 .video-card:hover .video-play {
   transform: translate(-50%, -50%) scale(1.1);
-  background: rgba(255,255,255,0.08);
+  background: rgba(184, 12, 9, 0.16);
+  border-color: rgba(184, 12, 9, 0.7);
 }
 
 .video-info {
   position: relative;
   z-index: 1;
+  transform: translateY(8px);
+  transition: transform 0.35s var(--ease);
+}
+
+.video-card:hover .video-info {
+  transform: translateY(0);
 }
 
 .video-title {
@@ -446,11 +482,12 @@ body.about-mode .nav-link.active {
 }
 
 .about-quote {
+  font-family: var(--font-display);
+  font-style: italic;
   font-size: clamp(2rem, 4.5vw, 3.4rem);
-  font-weight: 700;
-  letter-spacing: 0.025em;
-  line-height: 1.12;
-  text-transform: uppercase;
+  font-weight: 500;
+  letter-spacing: 0.005em;
+  line-height: 1.16;
   color: var(--text-dark);
   margin-bottom: 2.5rem;
 }
@@ -492,7 +529,7 @@ body.about-mode .nav-link.active {
 }
 
 .about-col a:hover {
-  color: var(--text-dark);
+  color: var(--accent-cool);
 }
 
 /* ---- LOADING / EMPTY ---- */
@@ -559,7 +596,7 @@ body.about-mode .nav-link.active {
 }
 
 .modal-close:hover {
-  color: #fff;
+  color: var(--accent-cool);
 }
 
 .modal-video {
@@ -625,7 +662,7 @@ body.about-mode .nav-link.active {
 }
 
 .lightbox-close:hover {
-  color: #fff;
+  color: var(--accent-cool);
 }
 
 #lightbox-img {

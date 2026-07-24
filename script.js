@@ -58,6 +58,10 @@ function route() {
   document.querySelectorAll('.nav-link').forEach((link) => {
     link.classList.toggle('active', link.dataset.section === section);
   });
+
+  document.title = section === 'home'
+    ? 'G.G. COOPER'
+    : `${section.charAt(0).toUpperCase()}${section.slice(1)} — G.G. Cooper`;
 }
 
 // ---- RENDER DISPATCH ----
