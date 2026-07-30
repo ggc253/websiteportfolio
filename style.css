@@ -9,7 +9,7 @@
 }
 
 :root {
-  --bg:            #141f14;   /* dark, derived from Fern */
+  --bg:            #0e0e0e;   /* back to black */
   --bg-light:      #e9e3b4;   /* Vanilla Custard */
   --text:          #f4f1df;
   --text-dim:      rgba(244, 241, 223, 0.42);
