@@ -630,13 +630,54 @@ function renderCreeker(cd) {
 
   const videos = (cd.videos || []).slice().sort((a, b) => b.year - a.year).map((v) => ({
     title: `Creeker Day ${v.year}`,
-    year: `July 4, ${v.year}`,
+    year: `The ${ordinal(v.year - since + 1)} annual, July 4, ${v.year}`,
     youtube_id: v.youtube_id,
     thumbnail: v.thumbnail,
   }));
   startCreekerTitle(videos.map(getThumb).filter(Boolean));
-  if (videos.length) renderVideoGrid('creeker-grid', videos);
+  if (videos.length) { renderVideoGrid('creeker-grid', videos); initFlipbooks(document.getElementById('creeker-grid')); }
   else document.getElementById('creeker-grid').innerHTML = '<p class="empty-state">The films are on their way.</p>';
+}
+
+// Hovering a year flips through frames from across that day's film, like
+// flicking through everyone's footage. YouTube keeps three frames from each
+// video (hq1–hq3, roughly a quarter, half and three quarters in).
+function initFlipbooks(grid) {
+  if (!grid || !matchMedia('(hover: hover)').matches) return;
+  if (matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+  grid.querySelectorAll('.video-card[data-key]').forEach((card) => {
+    const v = cardRegistry[+card.dataset.key];
+    if (!v || !v.youtube_id) return;
+    let frames = null, timer = 0, i = 0;
+    const build = () => {
+      frames = [1, 2, 3].map((n) => {
+        const img = document.createElement('img');
+        img.className = 'flip-frame';
+        img.alt = '';
+        img.src = `https://i.ytimg.com/vi/${v.youtube_id}/hq${n}.jpg`;
+        img.onerror = () => img.remove();
+        card.insertBefore(img, card.querySelector('.video-play'));
+        return img;
+      });
+    };
+    card.addEventListener('mouseenter', () => {
+      if (!frames) build();
+      i = 0;
+      const step = () => {
+        const live = frames.filter((f) => f.isConnected && f.complete && f.naturalWidth > 0);
+        frames.forEach((f) => f.classList.remove('on'));
+        // poster, then each frame in turn, round and round
+        i = (i + 1) % (live.length + 1);
+        if (i > 0) live[i - 1].classList.add('on');
+      };
+      timer = setInterval(step, 420);
+      step();
+    });
+    card.addEventListener('mouseleave', () => {
+      clearInterval(timer);
+      if (frames) frames.forEach((f) => f.classList.remove('on'));
+    });
+  });
 }
 
 // ---- ONE AFTERNOON IN SPRING ----

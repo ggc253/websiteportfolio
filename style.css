@@ -243,8 +243,15 @@ body.modal-open #creek { opacity: 0; }
 /* Hovering one frame slowly fades the others down — attention, not decoration.
    Only while a frame is actually under the cursor (crossing a gap doesn't dim everything). */
 @media (hover: hover) {
-  .video-grid:has(.video-card:hover) .video-thumb { filter: brightness(0.45) saturate(0.8); }
-  .video-grid .video-card:hover .video-thumb { filter: none; transition-duration: 0.7s; }
+  /* Same three filter functions in every state, in the same order, so the browser
+     can blend between them (mismatched lists jump instead of fading) */
+  .video-grid:not(#creeker-grid):has(.video-card:hover) .video-thumb {
+    filter: saturate(0.8) sepia(0.07) brightness(0.45);
+  }
+  .video-grid .video-card:hover .video-thumb {
+    filter: saturate(1) sepia(0) brightness(1);
+    transition-duration: 0.7s;
+  }
 }
 
 .video-play {
@@ -1206,3 +1213,17 @@ body.weaving #main { opacity: 0; transition: opacity 1.2s ease; }
   #creek { display: none; }
   .sk-title span { animation: none; }
 }
+
+/* ---- CREEKER DAY: flipbook on hover ---- */
+/* Hard cuts between frames on purpose: it's a flipbook, not a dissolve */
+.flip-frame {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;          /* crops YouTube's letterbox bars */
+  display: block;
+  visibility: hidden;
+}
+.flip-frame.on { visibility: visible; }
+#creeker-grid .video-play { z-index: 3; }
