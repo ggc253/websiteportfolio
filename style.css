@@ -219,8 +219,26 @@ body.modal-open #creek { opacity: 0; }
   height: 100%;
   object-fit: cover;
   display: block;
+  /* Gently toned toward the page: a touch less saturated, slightly warmer and dimmer */
+  filter: saturate(0.86) sepia(0.07) brightness(0.93);
   transition: filter 0.5s ease;
 }
+
+/* Soft edges: each frame's border melts into the page color, like a projected image */
+.video-card::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  pointer-events: none;
+  box-shadow:
+    inset 0 0 60px 8px color-mix(in srgb, var(--bg) 62%, transparent),
+    inset 0 0 0 1px color-mix(in srgb, var(--text) 6%, transparent);
+  transition: opacity 0.5s ease;
+}
+
+.video-card:hover::after { opacity: 0.3; }
+.video-play { z-index: 2; }
 
 /* Hovering one frame quietly dims the others — attention, not decoration */
 @media (hover: hover) {
@@ -834,6 +852,63 @@ body.spring-mode .video-card { background: var(--surface); }
 @media (max-width: 640px) {
   .spring-section { padding-top: 3rem; }
   .sp-row { grid-template-columns: 4.5rem 1fr; gap: 1rem; }
+}
+
+/* ---- SINKHOLE PORTAL (top of Home and Directing) ---- */
+/* A hole in the grid: wide, near-black, rings swelling out of the dark. */
+
+.sk-portal {
+  grid-column: 1 / -1;
+  position: relative;
+  display: block;
+  aspect-ratio: 2.39 / 1;
+  overflow: hidden;
+  background: radial-gradient(ellipse 45% 55% at 50% 50%, #050403 0%, #0b0907 55%, #120e0c 100%);
+  color: #e9e1d3;
+  text-decoration: none;
+  margin-bottom: 0.25rem;
+}
+
+.portal-rings {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+}
+
+.portal-inner {
+  position: relative;
+  z-index: 1;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 1rem;
+  transition: transform 1.2s cubic-bezier(0.4, 0, 0.2, 1), opacity 1.2s ease;
+}
+
+.sk-portal .portal-title { width: min(34%, 360px); }
+
+.portal-title-text {
+  font-size: clamp(2rem, 5vw, 3.6rem);
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+}
+
+.portal-status {
+  font-size: 0.85rem;
+  color: rgba(233, 225, 211, 0.55);
+}
+
+/* Hovering: the rings quicken and the title settles slightly deeper */
+.sk-portal:hover .portal-inner { transform: scale(0.97) translateY(4px); opacity: 0.85; }
+.sk-portal:focus-visible { outline: 1px solid var(--text); outline-offset: 3px; }
+
+@media (max-width: 720px) {
+  .sk-portal { aspect-ratio: 16 / 10; }
+  .sk-portal .portal-title { width: 58%; }
 }
 
 /* Slow fade into (and out of) the Spring page */

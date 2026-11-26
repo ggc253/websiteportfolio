@@ -27,7 +27,7 @@ async function init() {
     siteData = { featured: [], edit: [], directing: [], about: {}, sinkhole: {} };
   }
 
-  document.querySelector('.nav-link-feature').hidden = !sinkholeVisible();
+  document.querySelector('.nav-link-feature').hidden = true;   // reached through the portal in the grid
 
   document.getElementById('modal-backdrop').addEventListener('click', closeModal);
   document.getElementById('modal-close').addEventListener('click', closeModal);
@@ -50,6 +50,7 @@ async function init() {
   initCreek();
   initAbyss();
   initWithhold();
+  initPortals();
   initTicker();
 
   if ('scrollRestoration' in history) history.scrollRestoration = 'manual';
@@ -223,7 +224,9 @@ function renderVideoGrid(containerId, videos) {
     return;
   }
 
-  container.innerHTML = videos.map((v) => {
+  const portal = (containerId === 'home-grid' || containerId === 'directing-grid') ? sinkholePortal() : '';
+
+  container.innerHTML = portal + videos.map((v) => {
     const key = cardRegistry.push(v) - 1;
     const thumb = getThumb(v);
     const ytId = (thumb.includes('img.youtube.com') && v.youtube_id) ? esc(v.youtube_id) : '';
@@ -248,6 +251,92 @@ function renderVideoGrid(containerId, videos) {
         </div>
       </div>`;
   }).join('');
+}
+
+// ---- SINKHOLE PORTAL ----
+// A hole in the grid: a wide dark frame where rings swell out of the dark,
+// with the Sinkhole title floating over it. Click to sink in.
+
+function sinkholePortal() {
+  if (!sinkholeVisible()) return '';
+  const s = siteData.sinkhole || {};
+  const title = s.title_image
+    ? `<div class="sk-title-wrap portal-title" style="--title-img:url('${esc(s.title_image)}')"><img class="sk-title-img" src="${escHtml(s.title_image)}" alt="${escHtml(s.title || 'Sinkhole')}"></div>`
+    : `<div class="portal-title-text">${escHtml(s.title || 'Sinkhole')}</div>`;
+  return `
+    <a class="sk-portal" href="#sinkhole" aria-label="${escHtml(s.title || 'Sinkhole')}, ${escHtml(s.status || 'feature film')}">
+      <canvas class="portal-rings" aria-hidden="true"></canvas>
+      <div class="portal-inner">
+        ${title}
+        ${s.status ? `<span class="portal-status">${escHtml(s.status)}</span>` : ''}
+      </div>
+    </a>`;
+}
+
+function initPortals() {
+  const state = new WeakMap();
+  const still = matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+  function setup(cv) {
+    const r = cv.getBoundingClientRect();
+    const dpr = Math.min(window.devicePixelRatio || 1, 2);
+    cv.width = r.width * dpr; cv.height = r.height * dpr;
+    const ctx = cv.getContext('2d');
+    ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+    const maxR = Math.hypot(r.width, r.height) * 0.62;
+    const grow = (x) => 0.04 + x * 0.0045;
+    const rings = [];
+    for (let i = 0; i < 14; i++) {
+      const g = { r: 2, seed: Math.random() * 100, rose: Math.random() < 0.33 };
+      for (let k = 0; k < i * 70; k++) g.r += grow(g.r);
+      if (g.r < maxR) rings.push(g);
+    }
+    const st = { ctx, w: r.width, h: r.height, maxR, grow, rings, clock: 0, pull: 0 };
+    state.set(cv, st);
+    return st;
+  }
+
+  function draw(cv, t) {
+    let st = state.get(cv);
+    const r = cv.getBoundingClientRect();
+    if (!st || Math.abs(st.w - r.width) > 1) st = setup(cv);
+    const { ctx, w, h, maxR, grow } = st;
+    const hovering = cv.parentElement.matches(':hover');
+    st.pull += ((hovering ? 1 : 0) - st.pull) * 0.04;
+    const speed = 1 + st.pull * 2.2;
+    ctx.clearRect(0, 0, w, h);
+    if (!still) {
+      st.clock += speed;
+      if (st.clock > 70) { st.clock = 0; st.rings.push({ r: 2, seed: Math.random() * 100, rose: Math.random() < 0.33 }); }
+      for (const g of st.rings) g.r += grow(g.r) * speed;
+      st.rings = st.rings.filter((g) => g.r < maxR);
+    }
+    const cx = w * 0.5, cy = h * 0.5;
+    for (const g of st.rings) {
+      const depth = g.r / maxR;
+      const alpha = Math.min(1, depth * 9) * Math.min(1, (1 - depth) * 2.5) * (0.17 + st.pull * 0.08);
+      if (alpha < 0.004) continue;
+      ctx.strokeStyle = `rgba(${g.rose ? '224,168,178' : '233,225,211'},${alpha.toFixed(4)})`;
+      ctx.lineWidth = 0.7 + depth * 0.8;
+      ctx.beginPath();
+      for (let k = 0; k <= 96; k++) {
+        const th = (k / 96) * Math.PI * 2;
+        const wob = 1 + 0.05 * Math.sin(3 * th + g.seed + t * 0.25) + 0.022 * Math.sin(7 * th - g.seed - t * 0.4);
+        const x = cx + Math.cos(th) * g.r * wob * 1.6;
+        const y = cy + Math.sin(th) * g.r * wob * 0.7;
+        k ? ctx.lineTo(x, y) : ctx.moveTo(x, y);
+      }
+      ctx.stroke();
+    }
+  }
+
+  function frame(now) {
+    document.querySelectorAll('.portal-rings').forEach((cv) => {
+      if (cv.offsetParent) draw(cv, now * 0.001);
+    });
+    requestAnimationFrame(frame);
+  }
+  requestAnimationFrame(frame);
 }
 
 // ---- THUMBNAIL HELPERS ----
@@ -587,7 +676,7 @@ function initTicker() {
 // ---- CREEK ----
 // A dozen faint wisps. Each drifts in, travels with a tail that fades to nothing,
 // then dissolves completely before a new one appears. Nothing builds up.
-// Now and then one warm "story thread" carries a tiny "July 4" — follow it to Creeker Day.
+// Now and then one warm "story thread" carries a tiny "Happy Creeker Day" — follow it there.
 
 let creekSurge = () => {};
 
@@ -622,7 +711,7 @@ function initCreek() {
     setTimeout(() => { surgeTarget = 0; }, ms);
   };
 
-  // The story thread: appears every minute or so, carrying a "July 4" tag
+  // The story thread: appears every minute or so, carrying a "Happy Creeker Day" tag
   let nextStory = 12 + Math.random() * 10;   // seconds after load
   const spawnStory = () => {
     story = spawn(false, { x: Math.random() * w * 0.3, y: h * (0.25 + Math.random() * 0.5),
@@ -699,15 +788,15 @@ function initCreek() {
       }
       if (story.age >= story.life || story.x > w + 40) {
         story = null;
-        if (tag) { tag.style.opacity = 0; tag.classList.remove('live'); tag.textContent = 'July 4'; }
+        if (tag) { tag.style.opacity = 0; tag.classList.remove('live'); }
         nextStory = t + 45 + Math.random() * 30;
       }
     }
   }
 
   if (tag) {
-    tag.addEventListener('mouseenter', () => { if (story) { story.hover = true; tag.textContent = 'Creeker Day'; } });
-    tag.addEventListener('mouseleave', () => { if (story) story.hover = false; tag.textContent = 'July 4'; });
+    tag.addEventListener('mouseenter', () => { if (story) story.hover = true; });
+    tag.addEventListener('mouseleave', () => { if (story) story.hover = false; });
   }
 
   readColor();
