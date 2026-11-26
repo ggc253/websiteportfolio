@@ -931,8 +931,23 @@ function renderAbout(about) {
   const container = document.getElementById('about-content');
   if (!container) return;
 
-  const contact = about.email
-    ? `<a href="mailto:${escHtml(about.email)}">${escHtml(about.email)}</a>` : '';
+  // [words](#page) -> link
+  const linkify = (t) => escHtml(t).replace(/\[([^\]]+)\]\((#[a-z-]+|https?:[^)\s]+)\)/g,
+    (_, words, href) => `<a href="${href}"${href.startsWith('http') ? ' target="_blank" rel="noopener"' : ''}>${words}</a>`);
+
+  const sk = siteData.sinkhole || {};
+  const bio = String(about.bio || '').split(/\n\s*\n/).map((p) => p.replace(/\s*\n\s*/g, ' ').trim()).filter(Boolean)
+    .map((p) => {
+      let html = escHtml(p);
+      // Sinkhole in the bio links to its page
+      if (sinkholeVisible() && sk.title) html = html.replace(escHtml(sk.title), `<a href="#sinkhole">${escHtml(sk.title)}</a>`);
+      return `<p>${html}</p>`;
+    }).join('');
+
+  const facets = String(about.facets || '').split('\n').map((l) => l.trim()).filter(Boolean).map((l) => {
+    const [name, ...rest] = l.split(/\s+[—–]\s+/);
+    return { name, text: rest.join(' — ') };
+  });
 
   const social = [
     about.instagram ? `<a href="${escHtml(about.instagram)}" target="_blank" rel="noopener">Instagram</a>` : '',
@@ -940,23 +955,32 @@ function renderAbout(about) {
     about.youtube   ? `<a href="${escHtml(about.youtube)}"   target="_blank" rel="noopener">YouTube</a>`   : '',
   ].filter(Boolean).join('');
 
-  const clients = String(about.clients || '').split(',').map((c) => c.trim()).filter(Boolean)
-    .map((c) => `<span>${escHtml(c)}</span>`).join('');
-
-  const s = siteData.sinkhole || {};
-  const feature = sinkholeVisible()
-    ? `<p class="about-feature">His first feature, <a href="#sinkhole">${escHtml(s.title)}</a>, is ${escHtml((s.status || 'in progress').toLowerCase())}.</p>`
-    : '';
-
   container.innerHTML = `
-    ${about.quote ? `<div class="about-quote">${escHtml(about.quote)}</div>` : ''}
-    ${about.bio   ? `<p class="about-bio">${escHtml(about.bio)}</p>` : ''}
-    ${feature}
-    <div class="about-footer">
-      ${contact ? `<div class="about-col"><h3>Contact</h3>${contact}</div>` : ''}
-      ${clients ? `<div class="about-col"><h3>Selected clients</h3>${clients}</div>` : ''}
-      ${social  ? `<div class="about-col"><h3>Elsewhere</h3>${social}</div>` : ''}
-    </div>`;
+    <div class="about-main">
+      ${about.quote ? `<h1 class="about-quote">${escHtml(about.quote)}</h1>` : ''}
+      <div class="about-bio">${bio}</div>
+      <div class="about-contact">
+        ${about.email ? `<a href="mailto:${escHtml(about.email)}">${escHtml(about.email)}</a>` : ''}
+        ${social ? `<div class="about-social">${social}</div>` : ''}
+      </div>
+    </div>
+    ${facets.length ? `
+    <ul class="facets">
+      ${facets.map((f) => `
+        <li class="facet" tabindex="0">
+          <div class="facet-name">${escHtml(f.name)}</div>
+          <div class="facet-body"><div><p>${linkify(f.text)}</p></div></div>
+        </li>`).join('')}
+    </ul>` : ''}`;
+
+  // Touch screens have no hover: a tap opens a facet (and closes the others)
+  container.querySelectorAll('.facet').forEach((li) => {
+    li.addEventListener('click', (e) => {
+      if (e.target.closest('a') || matchMedia('(hover: hover)').matches) return;
+      container.querySelectorAll('.facet.open').forEach((o) => { if (o !== li) o.classList.remove('open'); });
+      li.classList.toggle('open');
+    });
+  });
 }
 
 // ---- VIDEO MODAL ----
