@@ -48,6 +48,7 @@ async function init() {
 
   initCursorLabel();
   initCreek();
+  initTicker();
 
   if ('scrollRestoration' in history) history.scrollRestoration = 'manual';
   window.addEventListener('hashchange', route);
@@ -326,6 +327,27 @@ function closeModal() {
   document.body.style.overflow = '';
 }
 
+// ---- TICKER ----
+// Repeat the words until each loop is wider than the screen, so there's never a gap
+// before the loop restarts. Speed stays constant regardless of screen width.
+
+function initTicker() {
+  const sets = document.querySelectorAll('.ticker-set');
+  const inner = document.querySelector('.ticker-inner');
+  if (sets.length < 2 || !inner) return;
+  const unit = sets[0].innerHTML;
+
+  function fill() {
+    sets[0].innerHTML = unit;
+    let guard = 0;
+    while (sets[0].scrollWidth < innerWidth + 200 && guard++ < 20) sets[0].innerHTML += unit;
+    sets[1].innerHTML = sets[0].innerHTML;
+    inner.style.animationDuration = `${sets[0].scrollWidth / 40}s`;   // ~40px per second
+  }
+  fill();
+  window.addEventListener('resize', fill);
+}
+
 // ---- CREEK ----
 // "Long exposure": fine threads drifting left to right, like a creek shot
 // with a slow shutter. Not interactive — it just flows.
@@ -343,7 +365,7 @@ function initCreek() {
     canvas.width = w * dpr; canvas.height = h * dpr;
     ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
     ctx.clearRect(0, 0, w, h);
-    const n = Math.round(Math.min(900, (w * h) / 2200));
+    const n = Math.round(Math.min(420, (w * h) / 3800));
     threads = Array.from({ length: n }, () => ({ x: Math.random() * w, y: Math.random() * h }));
   }
   window.addEventListener('resize', resize);
@@ -352,17 +374,18 @@ function initCreek() {
   function step(t) {
       // Slowly fade what's already drawn, so strokes build into silky trails
       ctx.globalCompositeOperation = 'destination-out';
-      ctx.fillStyle = 'rgba(0,0,0,0.012)';
+      ctx.fillStyle = 'rgba(0,0,0,0.018)';
       ctx.fillRect(0, 0, w, h);
       ctx.globalCompositeOperation = 'source-over';
 
-      ctx.strokeStyle = 'rgba(214,222,212,0.065)';
+      ctx.strokeStyle = 'rgba(236,228,214,0.075)';   // warm off-white, not green
       ctx.lineWidth = 0.8;
       ctx.beginPath();
       for (const p of threads) {
-        const a = Math.sin(p.y * 0.006 + t * 0.05) * 0.5
-                + Math.sin(p.x * 0.003 - t * 0.04 + p.y * 0.002) * 0.4;
-        const nx = p.x + Math.cos(a) * 0.9 + 0.3;
+        // A very slowly changing current, so strands run side by side instead of crossing
+        const a = Math.sin(p.y * 0.003 + p.x * 0.0016 + t * 0.012) * 0.5
+                + Math.sin(p.x * 0.0022 - p.y * 0.001 - t * 0.01) * 0.3;
+        const nx = p.x + Math.cos(a) * 1.0 + 0.4;
         const ny = p.y + Math.sin(a) * 0.6;
         ctx.moveTo(p.x, p.y);
         ctx.lineTo(nx, ny);
@@ -373,12 +396,12 @@ function initCreek() {
   }
 
   // Pre-run a few seconds so the page opens with trails already formed
-  function prewarm() { for (let i = 0; i < 420; i++) step(i * 0.0167); }
+  function prewarm() { for (let i = 0; i < 600; i++) step(i * 0.0167); }
   prewarm();
   window.addEventListener('resize', prewarm);
 
   function frame(now) {
-    if (!document.body.classList.contains('modal-open')) step(now * 0.001 + 7);
+    if (!document.body.classList.contains('modal-open')) step(now * 0.001 + 10);
     requestAnimationFrame(frame);
   }
   requestAnimationFrame(frame);
