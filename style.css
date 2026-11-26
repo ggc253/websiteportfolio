@@ -305,14 +305,14 @@ body.modal-open #creek { opacity: 0; }
   margin-top: 0.2rem;
   font-size: 0.85rem;
   line-height: 1.35;
-  color: rgba(236, 233, 226, 0.75);
+  color: var(--text-dim);
 }
 
 .cl-desc {
   margin-top: 0.45rem;
   font-size: 0.85rem;
   line-height: 1.45;
-  color: rgba(236, 233, 226, 0.75);
+  color: var(--text-dim);
 }
 
 .cl-desc:empty { display: none; }
@@ -537,6 +537,124 @@ body.modal-open #creek { opacity: 0; }
   height: 100%;
   border: none;
   display: block;
+}
+
+/* ---- TICKER EASTER EGG ---- */
+
+.ticker-set a.ticker-egg {
+  font-size: 0.68rem;
+  font-weight: 600;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+  color: var(--text-faint);
+  padding: 0 1.4rem;
+  text-decoration: none;
+  transition: color 0.6s ease;
+}
+
+.ticker-set a.ticker-egg:hover { color: var(--text); }
+
+/* ---- ONE AFTERNOON IN SPRING (hidden page) ---- */
+/* The only light page on the site: pale, overcast afternoon. */
+
+body.spring-mode {
+  --bg:        #eceae2;
+  --surface:   #dedbd1;
+  --text:      #1f211e;
+  --text-dim:  rgba(31, 33, 30, 0.58);
+  --text-faint:rgba(31, 33, 30, 0.32);
+  --rule:      rgba(31, 33, 30, 0.14);
+  background: var(--bg);
+  color: var(--text);
+  transition: background 1.2s ease, color 1.2s ease;
+}
+
+body.spring-mode #creek { opacity: 0; }
+body.spring-mode ::selection { background: var(--text); color: var(--bg); }
+
+.spring-section {
+  max-width: 980px;
+  padding-top: 5rem;
+}
+
+.sp-kicker {
+  font-size: 0.95rem;
+  color: var(--text-dim);
+}
+
+.sp-title {
+  margin-top: 0.6rem;
+  font-size: clamp(2.8rem, 7.5vw, 6.2rem);
+  font-weight: 400;
+  letter-spacing: -0.02em;
+  line-height: 1;
+}
+
+.sp-coming {
+  margin-top: 1.4rem;
+  font-size: 1.15rem;
+}
+
+.sp-count {
+  margin-top: 0.35rem;
+  font-size: 0.95rem;
+  color: var(--text-dim);
+  font-variant-numeric: tabular-nums;
+}
+
+.sp-intro {
+  margin-top: 3rem;
+  max-width: 34rem;
+  font-size: 1.02rem;
+  line-height: 1.7;
+  color: var(--text-dim);
+}
+
+.sp-ledger {
+  margin-top: 4rem;
+  border-top: 1px solid var(--text);
+}
+
+.sp-row {
+  display: grid;
+  grid-template-columns: 7rem 1fr;
+  gap: 2rem;
+  align-items: start;
+  padding: 1rem 0;
+  border-bottom: 1px solid var(--rule);
+  font-variant-numeric: tabular-nums;
+}
+
+.sp-year {
+  font-size: 1.05rem;
+  padding-top: 0.05rem;
+}
+
+.sp-row.future .sp-year { color: var(--text-faint); }
+.sp-row.now .sp-year::after { content: ' ←'; color: var(--text-dim); }
+
+.sp-note {
+  font-size: 0.95rem;
+  color: var(--text-dim);
+}
+
+.sp-row.final {
+  border-bottom: 1px solid var(--text);
+  padding: 1.6rem 0;
+}
+
+.sp-row.final .sp-year,
+.sp-row.final .sp-note { color: var(--text); font-size: 1.15rem; }
+
+.sp-trailer {
+  width: min(100%, 420px);
+}
+
+body.spring-mode .video-card { background: var(--surface); }
+
+@media (max-width: 640px) {
+  .spring-section { padding-top: 3rem; }
+  .sp-row { grid-template-columns: 4.5rem 1fr; gap: 1rem; }
 }
 
 /* ---- RESPONSIVE ---- */

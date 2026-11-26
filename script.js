@@ -12,7 +12,7 @@ function sinkholeVisible() {
 }
 
 function validSections() {
-  const base = ['home', 'directing', 'edit', 'about'];
+  const base = ['home', 'directing', 'edit', 'about', 'spring'];
   return sinkholeVisible() ? base.concat('sinkhole') : base;
 }
 
@@ -63,7 +63,8 @@ function route() {
 
   if (hash !== section) history.replaceState(null, '', location.search + '#' + section);
 
-  const noTicker = section === 'about' || section === 'sinkhole';
+  const noTicker = section === 'about' || section === 'sinkhole' || section === 'spring';
+  document.body.classList.toggle('spring-mode', section === 'spring');
   document.getElementById('ticker').classList.toggle('hidden', noTicker);
   document.getElementById('main').classList.toggle('no-ticker', noTicker);
 
@@ -83,9 +84,9 @@ function route() {
   hideCursorLabel();
   window.scrollTo(0, 0);
 
-  document.title = section === 'home'
-    ? 'G.G. COOPER'
-    : `${section.charAt(0).toUpperCase()}${section.slice(1)} — G.G. Cooper`;
+  document.title = section === 'home'   ? 'G.G. COOPER'
+                 : section === 'spring' ? 'One Afternoon in Spring'
+                 : `${section.charAt(0).toUpperCase()}${section.slice(1)} — G.G. Cooper`;
 }
 
 function renderSection(section) {
@@ -95,6 +96,7 @@ function renderSection(section) {
     directing: () => renderVideoGrid('directing-grid', siteData.directing || []),
     edit:      () => renderVideoGrid('edit-grid',      siteData.edit      || []),
     sinkhole:  () => renderSinkhole(siteData.sinkhole || {}),
+    spring:    () => renderSpring(siteData.spring || {}),
     about:     () => renderAbout(siteData.about || {}),
   })[section]?.();
 }
@@ -262,6 +264,65 @@ function renderSinkhole(s) {
       ${credits ? `<div class="sk-credits">${credits}</div>` : ''}
     </div>
     ${trailer}`;
+}
+
+// ---- ONE AFTERNOON IN SPRING ----
+// Hidden page (FILMMAKER in the ticker). A ledger of one trailer per year until 2047.
+
+function renderSpring(sp) {
+  const container = document.getElementById('spring-content');
+  if (!container) return;
+
+  const release = parseInt(sp.release, 10) || 2047;
+  const first = 2022;
+  const thisYear = new Date().getFullYear();
+  const byYear = {};
+  (sp.trailers || []).forEach((t) => { byYear[t.year] = t; });
+
+  // Afternoons left until the first day of spring in the release year
+  const spring = new Date(release, 2, 20, 15, 0, 0);
+  const days = Math.max(0, Math.ceil((spring - new Date()) / 86400000));
+
+  const rows = [];
+  for (let y = first; y <= release; y++) {
+    const t = byYear[y];
+    if (y === release) {
+      rows.push(`<div class="sp-row final"><div class="sp-year">${y}</div><div class="sp-note">The film.</div></div>`);
+      continue;
+    }
+    if (t) {
+      const v = { title: sp.title || 'One Afternoon in Spring', category: 'Trailer', year: String(y),
+                  youtube_id: t.youtube_id, thumbnail: t.thumbnail };
+      const key = cardRegistry.push(v) - 1;
+      const thumb = getThumb(v);
+      const ytId = (thumb.includes('img.youtube.com') && v.youtube_id) ? esc(v.youtube_id) : '';
+      rows.push(`
+        <div class="sp-row${y === thisYear ? ' now' : ''}">
+          <div class="sp-year">${y}</div>
+          <div class="sp-trailer">
+            <div class="video-card" data-key="${key}" role="button" tabindex="0" aria-label="Play the ${y} trailer">
+              <img class="video-thumb" src="${escHtml(thumb)}" alt="" loading="lazy"
+                   ${ytId ? `onload="upgradeYoutubeThumb(this,'${ytId}')"` : ''}>
+              <div class="video-play" aria-hidden="true"></div>
+            </div>
+          </div>
+        </div>`);
+    } else {
+      const state = y > thisYear ? 'future' : (y === thisYear ? 'now' : '');
+      const note = y === thisYear ? 'In progress.' : '';
+      rows.push(`<div class="sp-row ${state}"><div class="sp-year">${y}</div><div class="sp-note">${note}</div></div>`);
+    }
+  }
+
+  const intro = String(sp.intro || '').replace(/\s*\n\s*/g, ' ');
+
+  container.innerHTML = `
+    <p class="sp-kicker">${escHtml(sp.kicker || 'A documentary')}</p>
+    <h1 class="sp-title">${escHtml(sp.title || 'One Afternoon in Spring')}</h1>
+    <p class="sp-coming">Coming in ${release}.</p>
+    <p class="sp-count">${days.toLocaleString()} afternoons from now.</p>
+    ${intro ? `<p class="sp-intro">${escHtml(intro)}</p>` : ''}
+    <div class="sp-ledger">${rows.join('')}</div>`;
 }
 
 // ---- ABOUT ----

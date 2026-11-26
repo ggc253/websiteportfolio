@@ -1,0 +1,12 @@
+# One Afternoon in Spring — hidden page (click FILMMAKER in the ticker, or ggcooper.com/#spring)
+# Add one trailer per line under "trailers:", indented two spaces:  YEAR — YouTube link or ID
+# Example:
+#   2022 — https://youtu.be/XXXXXXXXXXX
+# Optional custom thumbnail per year: put the image in content/Spring/ and add it after the link:
+#   2023 — https://youtu.be/XXXXXXXXXXX — thumbs/spring2023.png
+title: One Afternoon in Spring
+kicker: A documentary
+release: 2047
+intro: One trailer a year, every year, from 2022 until the film is finished.
+  What it's about is still being found.
+trailers:

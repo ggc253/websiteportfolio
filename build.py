@@ -76,7 +76,7 @@ def copy_custom_thumbnails() -> None:
     Edit/Directing) into thumbs/ so they can be served and referenced via a
     `thumbnail: thumbs/filename.png` line in the matching .txt file."""
     copied = []
-    for folder in (CONTENT_DIR / "Featured", CONTENT_DIR / "Edit", CONTENT_DIR / "Directing", CONTENT_DIR / "Sinkhole"):
+    for folder in (CONTENT_DIR / "Featured", CONTENT_DIR / "Edit", CONTENT_DIR / "Directing", CONTENT_DIR / "Sinkhole", CONTENT_DIR / "Spring"):
         if not folder.exists():
             continue
         images = []
@@ -217,6 +217,36 @@ def process_about(about_file: Path) -> dict:
     return data
 
 
+def youtube_id_from(value: str) -> str:
+    """Accept a full YouTube link (youtu.be/…, watch?v=…) or a bare ID."""
+    import re
+    value = value.strip()
+    m = re.search(r"(?:youtu\.be/|[?&]v=|/embed/|/shorts/)([A-Za-z0-9_-]{11})", value)
+    return m.group(1) if m else value.split("?")[0]
+
+
+def process_spring(spring_file: Path) -> dict:
+    """One Afternoon in Spring — one trailer per year. Lines look like:
+       2022 — https://youtu.be/ID          (optionally:  — thumbs/file.png)"""
+    if not spring_file.exists():
+        return {}
+    data = parse_txt(spring_file)
+    trailers = []
+    for line in data.get("trailers", "").splitlines():
+        parts = [p.strip() for p in line.replace("–", "—").split("—") if p.strip()]
+        if len(parts) < 2 or not parts[0][:4].isdigit():
+            continue
+        t = {"year": int(parts[0][:4]), "youtube_id": youtube_id_from(parts[1])}
+        if len(parts) > 2:
+            t["thumbnail"] = parts[2]
+        trailers.append(t)
+        print(f"  ✓  {t['year']}  (id: {t['youtube_id']})")
+    if not trailers:
+        print("  (no trailers yet)")
+    data["trailers"] = sorted(trailers, key=lambda t: t["year"])
+    return data
+
+
 # ---- MAIN ----
 
 def main():
@@ -263,6 +293,9 @@ def main():
     if output["sinkhole"]:
         state = "published" if output["sinkhole"].get("published", "").lower() == "yes" else "hidden (preview only)"
         print(f"  ✓  Sinkhole page loaded — {state}")
+
+    print("\nOne Afternoon in Spring:")
+    output["spring"] = process_spring(CONTENT_DIR / "spring.txt")
 
     # Write to a temp file, then swap it in (avoids sync-lock errors on data.json)
     tmp = OUTPUT_JSON.with_suffix(".json.tmp")
