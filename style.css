@@ -1120,15 +1120,67 @@ body.weaving #main { opacity: 0; transition: opacity 1.2s ease; }
 
 .home-foot .holiday-note { margin: 0; padding: 0; border: 0; }
 
+/* Sinkhole, bottom right of the homepage. Quiet until you come near:
+   every so often a faint rose ring opens out of the word. Point at it and the
+   letters settle into the ground at uneven depths, the rings quicken, and
+   "Feature film" surfaces beside it. */
 .home-feature {
-  font-size: 0.85rem;
-  color: var(--text-faint);
+  position: relative;
+  display: inline-flex;
+  align-items: baseline;
+  gap: 0.9rem;
+  font-size: 0.95rem;
+  font-weight: 700;
+  letter-spacing: 0.02em;
+  color: var(--text-dim);
   text-decoration: none;
   white-space: nowrap;
-  transition: color 0.5s ease;
+  padding: 0.6rem 0 0.6rem 1rem;     /* a generous target */
+  margin: -0.6rem 0;
+  transition: color 0.9s ease;
 }
-.home-feature:hover { color: var(--text); }
 .home-feature[hidden] { display: none; }
+
+.hf-rings {
+  position: absolute;
+  right: -26px;
+  bottom: -34px;
+  width: 150px;
+  height: 110px;
+  pointer-events: none;
+}
+
+.hf-word { position: relative; display: inline-flex; }
+.hf-word span {
+  display: inline-block;
+  transition: transform 1.4s cubic-bezier(0.22, 0.61, 0.36, 1), color 1.2s ease;
+  transition-delay: calc(var(--i) * 45ms);
+}
+
+.hf-sub {
+  position: relative;
+  font-size: 0.78rem;
+  font-weight: 400;
+  letter-spacing: 0;
+  color: var(--text-faint);
+  opacity: 0;
+  transform: translateX(6px);
+  transition: opacity 0.8s ease, transform 0.9s cubic-bezier(0.22, 0.61, 0.36, 1);
+}
+
+.home-feature:hover,
+.home-feature:focus-visible { color: var(--text); outline: none; }
+.home-feature:hover .hf-word span,
+.home-feature:focus-visible .hf-word span {
+  transform: translateY(calc(var(--d) * 1em));
+  color: rgb(232, 196, 202);           /* the faintest rose, as on the Sinkhole page */
+}
+.home-feature:hover .hf-sub,
+.home-feature:focus-visible .hf-sub { opacity: 1; transform: none; }
+
+@media (max-width: 600px) {
+  .home-feature { padding-left: 0; }
+}
 
 @media (max-width: 600px) {
   .home-words { flex-direction: column; gap: 1.6rem; }

@@ -54,6 +54,7 @@ async function init() {
   initAbyss();
   initWithhold();
   initPortals();
+  initHomeFeature();
   initTicker();
 
   if ('scrollRestoration' in history) history.scrollRestoration = 'manual';
@@ -310,7 +311,17 @@ function renderHome() {
   const cats = CATS.filter(([k]) => (siteData[k] || []).length);
   el.innerHTML = cats.map(([k, l]) => `<a href="#${k}" data-cat="${k}">${l}</a>`).join('');
   const feat = document.getElementById('home-feature');
-  if (feat) feat.hidden = !sinkholeVisible();
+  if (feat) {
+    feat.hidden = !sinkholeVisible();
+    const word = feat.querySelector('.hf-word');
+    if (word && !word.childElementCount) {
+      // Letters settle at uneven depths, as if into soft ground (same as the Sinkhole page)
+      const depths = [0.05, 0.12, 0.03, 0.2, 0.08, 0.26, 0.11, 0.16];
+      const name = (siteData.sinkhole && siteData.sinkhole.title) || 'Sinkhole';
+      word.innerHTML = name.split('').map((ch, i) =>
+        `<span style="--d:${depths[i % depths.length]};--i:${i}">${escHtml(ch)}</span>`).join('');
+    }
+  }
 
   const words = [...el.querySelectorAll('a')];
   words.forEach((a) => a.addEventListener('click', (e) => {
@@ -335,6 +346,47 @@ function renderHome() {
   // Land: the words fade up together, a beat apart
   el.classList.remove('open', 'leaving');
   requestAnimationFrame(() => requestAnimationFrame(() => el.classList.add('open')));
+}
+
+// Faint rose rings opening out of the Sinkhole link: one every ~7s at rest,
+// quicker while the cursor is near.
+function initHomeFeature() {
+  const link = document.getElementById('home-feature');
+  const cv = link && link.querySelector('.hf-rings');
+  if (!cv || matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+  const ctx = cv.getContext('2d');
+  const dpr = Math.min(window.devicePixelRatio || 1, 2);
+  let rings = [], clock = 4.5, last = 0, w = 0, h = 0;
+  const frame = (now) => {
+    requestAnimationFrame(frame);
+    if (currentSection !== 'home' || link.hidden || !cv.offsetParent) { last = now; return; }
+    if (cv.offsetWidth !== w) {
+      w = cv.offsetWidth; h = cv.offsetHeight;
+      cv.width = w * dpr; cv.height = h * dpr; ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+    }
+    const dt = Math.min(0.05, (now - last) / 1000 || 0); last = now;
+    const near = link.matches(':hover, :focus-visible');
+    clock -= dt;
+    if (clock <= 0) { rings.push({ t: 0 }); clock = near ? 0.9 : 6 + Math.random() * 3; }
+    if (near && clock > 1.2) clock = 0.3;
+    ctx.clearRect(0, 0, w, h);
+    // centre on the word
+    const wr = link.querySelector('.hf-word').getBoundingClientRect(), cr = cv.getBoundingClientRect();
+    const cx = wr.left + wr.width / 2 - cr.left, cy = wr.top + wr.height * 0.6 - cr.top;
+    rings = rings.filter((r) => (r.t += dt / 3.2) < 1);
+    for (const r of rings) {
+      const e = 1 - Math.pow(1 - r.t, 2.2);                     // ease out: opens fast, slows
+      const maxRx = Math.min(cx, w - cx) - 2, maxRy = Math.min(cy, h - cy) - 2;
+      const rx = wr.width * 0.3 + e * (maxRx - wr.width * 0.3), ry = 3 + e * (maxRy - 3);
+      const a = Math.sin(Math.PI * Math.min(1, r.t * 1.15)) * (near ? 0.38 : 0.24);
+      ctx.strokeStyle = `rgba(224,168,178,${a.toFixed(3)})`;
+      ctx.lineWidth = 0.8;
+      ctx.beginPath();
+      ctx.ellipse(cx, cy, rx, ry, 0, 0, Math.PI * 2);
+      ctx.stroke();
+    }
+  };
+  requestAnimationFrame(frame);
 }
 
 // ---- SINKHOLE PORTAL ----
