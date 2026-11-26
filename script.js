@@ -57,11 +57,48 @@ async function init() {
 
 // ---- ROUTING ----
 
+let currentSection = null;
+let fading = false;
+
 function route() {
   const hash = window.location.hash.slice(1);
   const section = validSections().includes(hash) ? hash : 'home';
 
   if (hash !== section) history.replaceState(null, '', location.search + '#' + section);
+
+  // Entering or leaving One Afternoon in Spring: a long, slow fade through light
+  const crossing = currentSection !== null && (section === 'spring') !== (currentSection === 'spring');
+  const calm = matchMedia('(prefers-reduced-motion: reduce)').matches;
+  if (crossing && !calm && !fading) {
+    const entering = section === 'spring';
+    fadeThrough(entering ? 3200 : 1400, entering ? 2600 : 1200, () => showSection(section));
+    return;
+  }
+  if (!fading) showSection(section);
+}
+
+// Fade a full-screen veil up, swap the page underneath, then let the veil dissolve
+function fadeThrough(inMs, outMs, swap) {
+  const veil = document.getElementById('veil');
+  fading = true;
+  hideCursorLabel();
+  veil.style.transitionDuration = `${inMs}ms`;
+  veil.classList.add('on');
+  setTimeout(() => {
+    swap();
+    veil.style.transitionDuration = `${outMs}ms`;
+    requestAnimationFrame(() => requestAnimationFrame(() => veil.classList.remove('on')));
+    setTimeout(() => {
+      fading = false;
+      // If the address changed mid-fade, catch up
+      const h = location.hash.slice(1);
+      if (h && h !== currentSection) route();
+    }, outMs);
+  }, inMs + 150);
+}
+
+function showSection(section) {
+  currentSection = section;
 
   const noTicker = section === 'about' || section === 'sinkhole' || section === 'spring';
   document.body.classList.toggle('spring-mode', section === 'spring');

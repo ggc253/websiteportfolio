@@ -657,6 +657,23 @@ body.spring-mode .video-card { background: var(--surface); }
   .sp-row { grid-template-columns: 4.5rem 1fr; gap: 1rem; }
 }
 
+/* Slow fade into (and out of) the Spring page */
+#veil {
+  position: fixed;
+  inset: 0;
+  z-index: 450;
+  background: #eceae2;            /* the Spring page's pale afternoon */
+  opacity: 0;
+  pointer-events: none;
+  transition-property: opacity;
+  transition-timing-function: cubic-bezier(0.45, 0, 0.25, 1);
+}
+
+#veil.on { opacity: 1; pointer-events: all; }
+
+/* Once there, the page itself surfaces slowly */
+.section.spring-section { transition: opacity 2.4s ease 0.4s; }
+
 /* ---- RESPONSIVE ---- */
 
 @media (max-width: 640px) {
