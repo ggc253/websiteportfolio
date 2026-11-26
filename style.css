@@ -10,13 +10,13 @@
 }
 
 :root {
-  --bg:        #0b0d0c;                    /* Ink */
-  --surface:   #151917;
-  --text:      #ece9e2;                    /* Bone */
-  --text-dim:  rgba(236, 233, 226, 0.55);
-  --text-faint:rgba(236, 233, 226, 0.3);
-  --accent:    #8fa88f;                    /* Moss — used very sparingly */
-  --rule:      rgba(236, 233, 226, 0.12);
+  --bg:        #242320;                    /* Charcoal — warm, soft, not black */
+  --surface:   #2e2d29;
+  --text:      #eee9df;                    /* Cream */
+  --text-dim:  rgba(238, 233, 223, 0.62);
+  --text-faint:rgba(238, 233, 223, 0.36);
+  --accent:    #a3b5a0;                    /* Moss — used very sparingly */
+  --rule:      rgba(238, 233, 223, 0.1);
   --font:      'Helvetica Neue', Helvetica, Arial, sans-serif;
   --nav-h:     54px;
   --ticker-h:  38px;
@@ -504,7 +504,7 @@ body.modal-open #creek { opacity: 0; }
 .modal-backdrop {
   position: absolute;
   inset: 0;
-  background: rgba(5, 6, 6, 0.94);
+  background: rgba(24, 23, 21, 0.95);
   cursor: pointer;
 }
 

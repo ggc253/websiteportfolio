@@ -525,7 +525,7 @@ function initCreek() {
     canvas.width = w * dpr; canvas.height = h * dpr;
     ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
     ctx.clearRect(0, 0, w, h);
-    const n = Math.round(Math.min(420, (w * h) / 3800));
+    const n = Math.round(Math.min(300, (w * h) / 5200));
     threads = Array.from({ length: n }, () => ({ x: Math.random() * w, y: Math.random() * h }));
   }
   window.addEventListener('resize', resize);
@@ -538,7 +538,7 @@ function initCreek() {
       ctx.fillRect(0, 0, w, h);
       ctx.globalCompositeOperation = 'source-over';
 
-      ctx.strokeStyle = 'rgba(236,228,214,0.075)';   // warm off-white, not green
+      ctx.strokeStyle = 'rgba(238,233,223,0.032)';   // warm off-white, not green
       ctx.lineWidth = 0.8;
       ctx.beginPath();
       for (const p of threads) {
