@@ -4,12 +4,12 @@ bio: Graham Cooper is a director and editor. He holds a Master's Degree from the
   His work spans all genres with a focus on boundary pushing.
 
   His first feature, Sinkhole, is in post-production.
-# Facets: one per line, "Name — what opens on hover". Links: [words](#page)
+# Facets: one per line, "Name — the page it links to"
 facets:
-  Director — Narrative, commercial and documentary work. [See the narrative work](#narrative)
-  Editor — Documentaries, trailers and commercials. [See the documentary work](#documentary)
-  Creeker Day — Every July 4th since 2017, people across the world record their day, and it becomes one film. [Happy Creeker Day](#creeker)
-  The long game — One Afternoon in Spring: one trailer a year, every year, until the film comes out in 2047. [Coming in 2047](#spring)
+  Director — #narrative
+  Editor — #documentary
+  Creeker Day — #creeker
+  The long game — #spring
 email: gg@grahamcooper.co
 vimeo:
 youtube:

@@ -9,8 +9,9 @@ title: Sinkhole
 title_image: thumbs/sinkhole-title.png
 kicker: Feature Film
 status: In post-production
+imdb: https://www.imdb.com/title/tt38120316/
 tagline: the world withholds
-logline:
+logline: Halfway between a crumbled civilization and a hopeful new world, travelers stop over at a solitary graveyard, hidden within the woods. A family dispute draws in everyone there as it wreaks pain and destruction on the Gravekeeper's mysteriously lush home.
 still:
 trailer_youtube_id:
 credits:

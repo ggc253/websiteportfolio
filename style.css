@@ -446,10 +446,27 @@ body.sink-mode #abyss-shade { opacity: 1; }
 .sk-still img { width: 100%; height: 100%; object-fit: cover; display: block; }
 
 .sk-logline {
-  margin: 4rem 0;
-  max-width: 36rem;
-  font-size: 1.25rem;
-  line-height: 1.65;
+  margin: 2rem auto 0;
+  max-width: 34rem;
+  text-align: center;
+  font-size: clamp(1.1rem, 1.7vw, 1.35rem);
+  line-height: 1.7;
+  color: var(--text);
+  opacity: 0;
+  filter: blur(4px);
+  transition: opacity 2.6s ease, filter 2.6s ease;
+}
+.sk-logline.surfaced { opacity: 0.9; filter: none; }
+
+.sk-by a {
+  color: inherit;
+  text-decoration: none;                 /* no underline: it just warms when you find it */
+  transition: color 1.2s ease;
+}
+.sk-by a:hover { color: rgb(224, 168, 178); }
+
+@media (prefers-reduced-motion: reduce) {
+  .sk-logline { opacity: 0.9; filter: none; transition: none; }
 }
 
 .sk-credits {
@@ -609,6 +626,27 @@ body.sinking #main { transform: scale(0.985) translateY(8px); filter: blur(2px);
 }
 
 /* ---- ABOUT ---- */
+/* Black, with a long-exposure texture of slow silky threads behind it */
+body.about-mode {
+  --bg:      #0d0e0c;
+  --surface: #171815;
+  --rule:    rgba(236, 234, 220, 0.09);
+}
+body.about-mode #creek,
+body.about-mode .story-thread { opacity: 0; pointer-events: none; }
+
+#exposure {
+  position: fixed;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  z-index: 0;
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity 1.6s ease;
+}
+body.about-mode #exposure { opacity: 1; }
+
 /* A statement and bio on the left; on the right, the facets. Each is a single
    bold word or two; point at one (or tap it) and it opens to a line. */
 
@@ -644,8 +682,7 @@ body.sinking #main { transform: scale(0.985) translateY(8px); filter: blur(2px);
 .about-bio p + p { margin-top: 1rem; }
 
 .about-bio a,
-.about-contact a,
-.facet-body a {
+.about-contact a {
   color: var(--text);
   text-decoration: underline;
   text-decoration-color: var(--accent);
@@ -655,60 +692,70 @@ body.sinking #main { transform: scale(0.985) translateY(8px); filter: blur(2px);
 .about-contact { margin-top: 2.5rem; font-size: 1rem; }
 .about-social { display: flex; gap: 1.5rem; margin-top: 0.75rem; }
 
+/* Facets: just the words, each a link. Point at one and a ripple runs through its
+   letters while a thread draws in under it, left to right, like the current behind. */
 .facets {
-  list-style: none;
+  display: flex;
+  flex-direction: column;
   border-top: 1px solid var(--rule);
   margin-top: 0.6rem;
 }
 
 .facet {
+  position: relative;
+  display: block;
+  padding: 1.15rem 0;
   border-bottom: 1px solid var(--rule);
+  color: var(--text);
+  text-decoration: none;
   outline: none;
-  cursor: default;
+  transition: color 0.6s ease, padding-left 0.8s cubic-bezier(0.22, 0.61, 0.36, 1);
 }
 
 .facet-name {
-  padding: 1.15rem 0;
+  display: inline-flex;
   font-size: clamp(1.4rem, 2.3vw, 1.9rem);
   font-weight: 700;
   letter-spacing: -0.015em;
-  color: var(--text);
-  transition: padding-left 0.6s cubic-bezier(0.22, 0.61, 0.36, 1), color 0.5s ease;
+}
+.facet-name span { display: inline-block; }
+
+/* The thread: draws in from the left on hover, slips out to the right after */
+.facet::after {
+  content: '';
+  position: absolute;
+  left: 0; right: 0; bottom: -1px;
+  height: 1px;
+  background: var(--text);
+  transform: scaleX(0);
+  transform-origin: right;
+  transition: transform 0.9s cubic-bezier(0.65, 0, 0.25, 1);
 }
 
-.facet-body {
-  display: grid;
-  grid-template-rows: 0fr;
-  transition: grid-template-rows 0.6s cubic-bezier(0.22, 0.61, 0.36, 1);
+.facets:hover .facet { color: var(--text-dim); }
+.facets .facet:hover,
+.facet:focus-visible { color: var(--text); padding-left: 0.6rem; }
+.facet:hover::after,
+.facet:focus-visible::after { transform: scaleX(1); transform-origin: left; }
+
+.facet:hover .facet-name span,
+.facet:focus-visible .facet-name span {
+  animation: facet-ripple 0.9s cubic-bezier(0.37, 0, 0.25, 1) both;
+  animation-delay: calc(var(--i) * 32ms);
 }
-.facet-body > div { overflow: hidden; }
-.facet-body p {
-  padding: 0 0 1.3rem;
-  max-width: 30rem;
-  font-size: 0.97rem;
-  line-height: 1.7;
-  color: var(--text-dim);
-  opacity: 0;
-  transition: opacity 0.5s ease;
+@keyframes facet-ripple {
+  0%   { transform: none; }
+  35%  { transform: translateY(-0.14em); }
+  70%  { transform: translateY(0.04em); }
+  100% { transform: none; }
 }
 
-/* The others step back a little while one is open */
-@media (hover: hover) {
-  .facets:hover .facet-name { color: var(--text-dim); }
-  .facet:hover .facet-name { color: var(--text); padding-left: 0.6rem; }
-  .facet:hover .facet-body { grid-template-rows: 1fr; }
-  .facet:hover .facet-body p { opacity: 1; transition-delay: 0.1s; }
+@media (prefers-reduced-motion: reduce) {
+  .facet:hover .facet-name span { animation: none; }
 }
-.facet:focus-visible .facet-body,
-.facet.open .facet-body { grid-template-rows: 1fr; }
-.facet:focus-visible .facet-body p,
-.facet.open .facet-body p { opacity: 1; }
-.facet:focus-visible .facet-name,
-.facet.open .facet-name { padding-left: 0.6rem; }
 
 @media (max-width: 820px) {
   .about-content { grid-template-columns: 1fr; }
-  .facet { cursor: pointer; }
 }
 
 /* ---- LOADING / EMPTY ---- */
@@ -1179,7 +1226,7 @@ body.weaving #main { opacity: 0; transition: opacity 1.2s ease; }
 .home-foot {
   display: flex;
   justify-content: space-between;
-  align-items: baseline;
+  align-items: center;
   gap: 1rem;
   border-top: 1px solid var(--rule);
   padding-top: 1.25rem;
@@ -1194,17 +1241,11 @@ body.weaving #main { opacity: 0; transition: opacity 1.2s ease; }
 .home-feature {
   position: relative;
   display: inline-flex;
-  align-items: baseline;
-  font-family: 'IM Fell English SC', Georgia, serif;
-  font-size: 1.2rem;
-  font-weight: 400;
-  letter-spacing: 0.16em;
+  align-items: center;
   color: var(--text-dim);
   text-decoration: none;
-  white-space: nowrap;
   padding: 0.6rem 0 0.6rem 1rem;     /* a generous target */
   margin: -0.6rem 0;
-  transition: color 0.9s ease;
 }
 .home-feature[hidden] { display: none; }
 
@@ -1217,20 +1258,23 @@ body.weaving #main { opacity: 0; transition: opacity 1.2s ease; }
   pointer-events: none;
 }
 
+/* The Sinkhole title logo, small. On hover it settles a little into the ground
+   and warms to the faint rose of the Sinkhole page. */
 .hf-word { position: relative; display: inline-flex; }
-.hf-word span {
-  display: inline-block;
-  transition: transform 1.4s cubic-bezier(0.22, 0.61, 0.36, 1), color 1.2s ease;
-  transition-delay: calc(var(--i) * 45ms);
+.hf-logo {
+  display: block;
+  height: 24px;
+  width: auto;
+  opacity: 0.7;
+  transition: opacity 0.9s ease, transform 1.4s cubic-bezier(0.22, 0.61, 0.36, 1), filter 1.2s ease;
 }
-
-.home-feature:hover,
-.home-feature:focus-visible { color: var(--text); outline: none; }
-.home-feature:hover .hf-word span,
-.home-feature:focus-visible .hf-word span {
-  transform: translateY(calc(var(--d) * 1em));
-  color: rgb(232, 196, 202);           /* the faintest rose, as on the Sinkhole page */
+.home-feature:hover .hf-logo,
+.home-feature:focus-visible .hf-logo {
+  opacity: 1;
+  transform: translateY(3px);
+  filter: sepia(0.5) saturate(2.2) hue-rotate(-30deg) brightness(0.95);
 }
+.home-feature:focus-visible { outline: none; }
 
 @media (max-width: 600px) {
   .home-feature { padding-left: 0; }

@@ -55,6 +55,7 @@ async function init() {
   initWithhold();
   initPortals();
   initHomeFeature();
+  initExposure();
   initTicker();
 
   if ('scrollRestoration' in history) history.scrollRestoration = 'manual';
@@ -168,6 +169,7 @@ function showSection(section) {
   currentSection = section;
   document.body.classList.toggle('sink-mode', section === 'sinkhole');
   document.body.classList.toggle('creeker-mode', section === 'creeker');
+  document.body.classList.toggle('about-mode', section === 'about');
 
   const noTicker = section === 'about' || section === 'sinkhole' || section === 'spring';
   document.body.classList.toggle('spring-mode', section === 'spring');
@@ -315,11 +317,11 @@ function renderHome() {
     feat.hidden = !sinkholeVisible();
     const word = feat.querySelector('.hf-word');
     if (word && !word.childElementCount) {
-      // Letters settle at uneven depths, as if into soft ground (same as the Sinkhole page)
-      const depths = [0.05, 0.12, 0.03, 0.2, 0.08, 0.26, 0.11, 0.16];
-      const name = (siteData.sinkhole && siteData.sinkhole.title) || 'Sinkhole';
-      word.innerHTML = name.split('').map((ch, i) =>
-        `<span style="--d:${depths[i % depths.length]};--i:${i}">${escHtml(ch)}</span>`).join('');
+      // The film's own title logo, small; falls back to the word if there's no logo
+      const sk = siteData.sinkhole || {};
+      word.innerHTML = sk.title_image
+        ? `<img class="hf-logo" src="${escHtml(sk.title_image)}" alt="">`
+        : escHtml(sk.title || 'Sinkhole');
     }
   }
 
@@ -383,6 +385,62 @@ function initHomeFeature() {
       ctx.lineWidth = 0.8;
       ctx.beginPath();
       ctx.ellipse(cx, cy, rx, ry, 0, 0, Math.PI * 2);
+      ctx.stroke();
+    }
+  };
+  requestAnimationFrame(frame);
+}
+
+// ---- ABOUT: LONG EXPOSURE ----
+// Silky threads, like water photographed with a slow shutter. Each thread is a
+// short tail that fades from nothing to nothing and is redrawn from scratch every
+// frame, so the texture always stays the same density: it can never build up.
+function initExposure() {
+  const cv = document.getElementById('exposure');
+  if (!cv || matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+  const ctx = cv.getContext('2d');
+  const TAIL = 110;              // points kept per thread (one every 2 frames: ~3.5s of travel)
+  const BANDS = 8;               // the tail is drawn in bands, faint at both ends
+  let w = 0, h = 0, threads = [], frameNo = 0;
+  const spawn = (x) => ({ x: x ?? Math.random() * w, y: Math.random() * h, tail: [] });
+  const resize = () => {
+    const dpr = Math.min(window.devicePixelRatio || 1, 2);
+    w = innerWidth; h = innerHeight;
+    cv.width = w * dpr; cv.height = h * dpr;
+    ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+    const n = Math.round(Math.min(520, (w * h) / 3400));
+    threads = Array.from({ length: n }, () => spawn());
+  };
+  resize();
+  window.addEventListener('resize', resize);
+
+  const frame = (now) => {
+    requestAnimationFrame(frame);
+    const b = document.body.classList;
+    if (!b.contains('about-mode') || b.contains('modal-open')) return;
+    const t = now * 0.001;
+    frameNo++;
+    for (const p of threads) {
+      const a = Math.sin(p.y * 0.006 + t * 0.05) * 0.5 + Math.sin(p.x * 0.003 - t * 0.04 + p.y * 0.002) * 0.4;
+      p.x += Math.cos(a) * 0.9 + 0.3;
+      p.y += Math.sin(a) * 0.6;
+      if (frameNo % 2 === 0) { p.tail.push(p.x, p.y); if (p.tail.length > TAIL * 2) p.tail.splice(0, 2); }
+      if (p.x > w + 5 || p.y < -5 || p.y > h + 5) Object.assign(p, spawn(-5));
+    }
+    ctx.clearRect(0, 0, w, h);
+    ctx.lineWidth = 0.8;
+    for (let k = 0; k < BANDS; k++) {
+      const mid = (k + 0.5) / BANDS;
+      const alpha = Math.sin(Math.PI * mid) * 0.14;            // fades in from the tail, out at the head
+      ctx.strokeStyle = `rgba(214,222,212,${alpha.toFixed(3)})`;
+      ctx.beginPath();
+      for (const p of threads) {
+        const n = p.tail.length / 2;
+        if (n < 2) continue;
+        const from = Math.floor((k / BANDS) * (n - 1)), to = Math.ceil(((k + 1) / BANDS) * (n - 1));
+        ctx.moveTo(p.tail[from * 2], p.tail[from * 2 + 1]);
+        for (let i = from + 1; i <= to; i++) ctx.lineTo(p.tail[i * 2], p.tail[i * 2 + 1]);
+      }
       ctx.stroke();
     }
   };
@@ -600,13 +658,24 @@ function renderSinkhole(s) {
   container.innerHTML = `
     <div class="sk-stage">
       ${heading}
-      ${s.status ? `<p class="sk-by">${escHtml(s.status)}</p>` : ''}
+      ${s.status ? `<p class="sk-by">${s.imdb
+        ? `<a href="${escHtml(s.imdb)}" target="_blank" rel="noopener">${escHtml(s.status)}</a>`
+        : escHtml(s.status)}</p>` : ''}
       ${s.tagline ? `<p class="sk-tag" id="sk-tag">${escHtml(s.tagline)}</p>` : ''}
     </div>
     ${s.still ? `<div class="sk-still"><img src="${escHtml(s.still)}" alt=""></div>` : ''}
-    ${s.logline ? `<p class="sk-logline">${escHtml(s.logline)}</p>` : ''}
+    ${s.logline ? `<p class="sk-logline" id="sk-logline">${escHtml(String(s.logline).replace(/\s*\n\s*/g, ' '))}</p>` : ''}
     ${credits ? `<div class="sk-credits">${credits}</div>` : ''}
     ${trailer}`;
+
+  // The logline surfaces slowly once it scrolls into view
+  const log = document.getElementById('sk-logline');
+  if (log && 'IntersectionObserver' in window) {
+    const io = new IntersectionObserver((entries) => {
+      if (entries.some((e) => e.isIntersecting)) { log.classList.add('surfaced'); io.disconnect(); }
+    }, { threshold: 0.6 });
+    io.observe(log);
+  } else if (log) log.classList.add('surfaced');
 }
 
 // ---- CREEKER DAY TITLE ----
@@ -945,8 +1014,8 @@ function renderAbout(about) {
     }).join('');
 
   const facets = String(about.facets || '').split('\n').map((l) => l.trim()).filter(Boolean).map((l) => {
-    const [name, ...rest] = l.split(/\s+[—–]\s+/);
-    return { name, text: rest.join(' — ') };
+    const [name, href] = l.split(/\s+[—–]\s+/);
+    return { name, href: (href || '').trim() };
   });
 
   const social = [
@@ -965,22 +1034,14 @@ function renderAbout(about) {
       </div>
     </div>
     ${facets.length ? `
-    <ul class="facets">
+    <nav class="facets" aria-label="Facets">
       ${facets.map((f) => `
-        <li class="facet" tabindex="0">
-          <div class="facet-name">${escHtml(f.name)}</div>
-          <div class="facet-body"><div><p>${linkify(f.text)}</p></div></div>
-        </li>`).join('')}
-    </ul>` : ''}`;
+        <a class="facet" href="${escHtml(f.href || '#')}"${/^https?:/.test(f.href) ? ' target="_blank" rel="noopener"' : ''}>
+          <span class="facet-name" aria-label="${escHtml(f.name)}">${f.name.split('').map((ch, i) =>
+            `<span style="--i:${i}" aria-hidden="true">${ch === ' ' ? '&nbsp;' : escHtml(ch)}</span>`).join('')}</span>
+        </a>`).join('')}
+    </nav>` : ''}`;
 
-  // Touch screens have no hover: a tap opens a facet (and closes the others)
-  container.querySelectorAll('.facet').forEach((li) => {
-    li.addEventListener('click', (e) => {
-      if (e.target.closest('a') || matchMedia('(hover: hover)').matches) return;
-      container.querySelectorAll('.facet.open').forEach((o) => { if (o !== li) o.classList.remove('open'); });
-      li.classList.toggle('open');
-    });
-  });
 }
 
 // ---- VIDEO MODAL ----
