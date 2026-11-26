@@ -252,6 +252,34 @@ def process_yearly(path: Path, list_key: str) -> dict:
     return data
 
 
+def collect_flip_frames(items: list) -> None:
+    """Creeker Day flipbook stills: images in content/Creeker/<year>/ (in filename
+    order) are copied to thumbs/creeker-<year>/ and flipped through on hover.
+    Years without a folder fall back to YouTube's three automatic frames."""
+    for item in items:
+        folder = CONTENT_DIR / "Creeker" / str(item["year"])
+        if not folder.is_dir():
+            continue
+        imgs = sorted(p for p in folder.iterdir() if p.suffix.lower() in IMAGE_EXTS)
+        if not imgs:
+            continue
+        out = THUMBS_OUT / f"creeker-{item['year']}"
+        out.mkdir(parents=True, exist_ok=True)
+        frames = []
+        for img in imgs:
+            dst = out / img.name
+            if not (dst.exists() and dst.stat().st_size == img.stat().st_size):
+                for attempt in range(5):
+                    try:
+                        shutil.copy2(img, dst)
+                        break
+                    except OSError:
+                        time.sleep(1)
+            frames.append(f"thumbs/creeker-{item['year']}/{img.name}")
+        item["frames"] = frames
+        print(f"     {item['year']}: {len(frames)} flipbook stills")
+
+
 def process_spring(spring_file: Path) -> dict:
     return process_yearly(spring_file, "trailers")
 
@@ -316,6 +344,7 @@ def main():
 
     print("\nCreeker Day:")
     output["creeker"] = process_yearly(CONTENT_DIR / "creeker.txt", "videos")
+    collect_flip_frames(output["creeker"].get("videos", []))
 
     # Write to a temp file, then swap it in (avoids sync-lock errors on data.json)
     tmp = OUTPUT_JSON.with_suffix(".json.tmp")

@@ -562,23 +562,54 @@ function renderSinkhole(s) {
 // dissolve one into the next. Many people's days, one title.
 
 let creekerCycle = 0;
-function startCreekerTitle(stills) {
+function startCreekerTitle(pool) {
   clearInterval(creekerCycle);
   const el = document.getElementById('cr-title');
-  if (!el || !stills.length) return;
+  if (!el || !pool.length) return;
   const [a, b] = el.querySelectorAll('.cr-t');
-  const set = (n, i) => { n.style.backgroundImage = `url(${JSON.stringify(stills[i])})`; };
+  const ok = new Map();                                // src -> loaded Image (only good ones get shown)
+  const load = (src) => new Promise((res) => {
+    if (ok.has(src)) return res(true);
+    const im = new Image();
+    im.onload = () => { const good = im.naturalWidth > 120; if (good) ok.set(src, im); res(good); };
+    im.onerror = () => res(false);
+    im.src = src;
+  });
+  const shuffle = (arr) => {
+    const out = arr.slice();
+    for (let k = out.length - 1; k > 0; k--) { const j = Math.floor(Math.random() * (k + 1)); [out[k], out[j]] = [out[j], out[k]]; }
+    return out;
+  };
+  // A shuffled deck: every still once before any repeats, then reshuffle
+  let deck = [], last = null;
+  const draw = () => {
+    if (!deck.length) { deck = shuffle(pool); if (deck[0] === last && deck.length > 1) deck.push(deck.shift()); }
+    return (last = deck.shift());
+  };
+  const paint = (n, src) => { n.style.backgroundImage = `url(${JSON.stringify(src)})`; };
+
   el.classList.add('footage');
-  let i = Math.floor(Math.random() * stills.length);
-  set(a, i);
-  if (stills.length < 2 || matchMedia('(prefers-reduced-motion: reduce)').matches) return;
-  let top = false;                                   // is the upper layer (b) showing?
-  creekerCycle = setInterval(() => {
+  const first = draw();
+  paint(a, first);
+  if (pool.length < 2 || matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+
+  let top = false;                                     // is the upper layer (b) showing?
+  let busy = false;
+  let next = draw();
+  load(next);
+  creekerCycle = setInterval(async () => {
     if (currentSection !== 'creeker') { clearInterval(creekerCycle); return; }
-    i = (i + 1) % stills.length;
-    if (top) { set(a, i); b.style.opacity = 0; } else { set(b, i); b.style.opacity = 1; }
+    if (busy) return;
+    busy = true;
+    // skip anything that hasn't loaded or doesn't exist
+    let tries = 0;
+    while (!(await load(next)) && tries++ < pool.length) next = draw();
+    if (top) { paint(a, next); b.style.opacity = 0; } else { paint(b, next); b.style.opacity = 1; }
     top = !top;
-  }, 3000);
+    next = draw();
+    load(next);                                        // preload the one after
+    busy = false;
+  }, 2600);
 }
 
 // ---- CREEKER DAY ----
@@ -633,28 +664,40 @@ function renderCreeker(cd) {
     year: `The ${ordinal(v.year - since + 1)} annual, July 4, ${v.year}`,
     youtube_id: v.youtube_id,
     thumbnail: v.thumbnail,
+    frames: v.frames,
   }));
-  startCreekerTitle(videos.map(getThumb).filter(Boolean));
+  // Every still we have from every year: covers, YouTube's frames, and Graham's own
+  const stills = videos.flatMap((v) => [getThumb(v)].concat(
+    (v.frames && v.frames.length) ? v.frames
+      : v.youtube_id ? [1, 2, 3].map((n) => `https://i.ytimg.com/vi/${v.youtube_id}/hq${n}.jpg`) : []));
+  startCreekerTitle([...new Set(stills.filter(Boolean))]);
   if (videos.length) { renderVideoGrid('creeker-grid', videos); initFlipbooks(document.getElementById('creeker-grid')); }
   else document.getElementById('creeker-grid').innerHTML = '<p class="empty-state">The films are on their way.</p>';
 }
 
 // Hovering a year flips through frames from across that day's film, like
 // flicking through everyone's footage. YouTube keeps three frames from each
-// video (hq1–hq3, roughly a quarter, half and three quarters in).
+// video (hq1–hq3, roughly a quarter, half and three quarters in); stills in
+// content/Creeker/<year>/ replace those for that year.
 function initFlipbooks(grid) {
   if (!grid || !matchMedia('(hover: hover)').matches) return;
   if (matchMedia('(prefers-reduced-motion: reduce)').matches) return;
   grid.querySelectorAll('.video-card[data-key]').forEach((card) => {
     const v = cardRegistry[+card.dataset.key];
-    if (!v || !v.youtube_id) return;
+    if (!v || (!v.youtube_id && !(v.frames && v.frames.length))) return;
     let frames = null, timer = 0, i = 0;
+    // Graham's own stills (content/Creeker/<year>/) if there are any,
+    // otherwise YouTube's three automatic frames
+    const srcs = (v.frames && v.frames.length)
+      ? v.frames
+      : [1, 2, 3].map((n) => `https://i.ytimg.com/vi/${v.youtube_id}/hq${n}.jpg`);
+    const pace = srcs.length > 4 ? 300 : 420;
     const build = () => {
-      frames = [1, 2, 3].map((n) => {
+      frames = srcs.map((src) => {
         const img = document.createElement('img');
         img.className = 'flip-frame';
         img.alt = '';
-        img.src = `https://i.ytimg.com/vi/${v.youtube_id}/hq${n}.jpg`;
+        img.src = src;
         img.onerror = () => img.remove();
         card.insertBefore(img, card.querySelector('.video-play'));
         return img;
@@ -670,7 +713,7 @@ function initFlipbooks(grid) {
         i = (i + 1) % (live.length + 1);
         if (i > 0) live[i - 1].classList.add('on');
       };
-      timer = setInterval(step, 420);
+      timer = setInterval(step, pace);
       step();
     });
     card.addEventListener('mouseleave', () => {
