@@ -1,9 +1,9 @@
 name: Deploy to GitHub Pages
 
+# Paused: the site now publishes via Settings → Pages → "Deploy from a branch".
+# Kept for manual use only (Actions tab → Run workflow).
 on:
-  push:
-    branches: ["main"]
-  workflow_dispatch:        # lets you re-run it by hand from the Actions tab
+  workflow_dispatch:
 
 # Allow one concurrent deployment
 concurrency:

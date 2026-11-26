@@ -1,0 +1,18 @@
+# Netlify settings for ggcooper.com
+# Static site: no build step. build.py runs locally before each push.
+[build]
+  publish = "."
+  command = ""
+
+# Don't serve the source/tooling files
+[[redirects]]
+  from = "/content/*"
+  to = "/404"
+  status = 404
+  force = true
+
+[[redirects]]
+  from = "/build.py"
+  to = "/404"
+  status = 404
+  force = true
