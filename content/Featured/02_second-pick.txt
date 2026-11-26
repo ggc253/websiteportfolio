@@ -1,5 +1,6 @@
-title: So Far So Good | Short Film
+title: So Far So Good
 youtube_id: XLTsCWq8BFE
-description:
-client:
+category: Short Film
+client: 
 year: 2023
+description: 

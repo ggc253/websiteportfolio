@@ -1,119 +1,133 @@
 {
   "featured": [
     {
-      "title": "Sonos Spec Ad",
+      "title": "Sonos",
       "youtube_id": "jqEi_6IwNn8",
-      "description": "",
-      "client": "Spec",
+      "category": "Spec Commercial",
+      "client": "",
       "year": "2025",
+      "description": "",
       "thumbnail": "https://img.youtube.com/vi/jqEi_6IwNn8/hqdefault.jpg"
     },
     {
-      "title": "So Far So Good | Short Film",
+      "title": "So Far So Good",
       "youtube_id": "XLTsCWq8BFE",
-      "description": "",
+      "category": "Short Film",
       "client": "",
       "year": "2023",
+      "description": "",
       "thumbnail": "https://img.youtube.com/vi/XLTsCWq8BFE/hqdefault.jpg"
     },
     {
-      "title": "Am I Crazy? CTE Documentary",
+      "title": "Am I Crazy?",
       "youtube_id": "XMexYGNz7p4",
       "thumbnail": "thumbs/ctethumbnail.png",
-      "description": "",
+      "category": "Documentary Trailer",
       "client": "",
-      "year": "2023"
+      "year": "2023",
+      "description": ""
     },
     {
-      "title": "Bubble Butt | Short Film",
+      "title": "Bubble Butt",
       "youtube_id": "thI---iVuYI",
-      "description": "",
+      "category": "Short Film",
       "client": "",
       "year": "2018",
+      "description": "",
       "thumbnail": "https://img.youtube.com/vi/thI---iVuYI/hqdefault.jpg"
     },
     {
-      "title": "Trumer Pils Summer Ad",
+      "title": "Trumer Pils",
       "youtube_id": "tiAn1cn9_Uk",
       "thumbnail": "thumbs/trumerpilsthumbnail.png",
-      "description": "",
-      "client": "Trumer Pils",
-      "year": "2024"
+      "category": "Commercial",
+      "client": "",
+      "year": "2024",
+      "description": ""
     },
     {
       "title": "The Arc of an Athlete",
       "youtube_id": "YLqHp0LKS8U",
       "thumbnail": "thumbs/arcofathletethumbnail.png",
-      "description": "",
+      "category": "Documentary Short",
       "client": "",
-      "year": "2023"
+      "year": "2023",
+      "description": ""
     }
   ],
   "edit": [
     {
-      "title": "Am I Crazy? CTE Documentary",
+      "title": "Am I Crazy?",
       "youtube_id": "XMexYGNz7p4",
       "thumbnail": "thumbs/ctethumbnail.png",
-      "description": "",
+      "category": "Documentary Trailer",
       "client": "",
-      "year": "2023"
+      "year": "2023",
+      "description": ""
     },
     {
-      "title": "Blaq Diaries: The Story of Blaq Tuxedo",
+      "title": "Blaq Diaries",
       "youtube_id": "rxRKXn65uF4",
-      "description": "",
+      "category": "Documentary",
       "client": "Blaq Tuxedo",
       "year": "2025",
+      "description": "",
       "thumbnail": "https://img.youtube.com/vi/rxRKXn65uF4/hqdefault.jpg"
     },
     {
-      "title": "The Hunnypot Story - Official Documentary Trailer",
+      "title": "The Hunnypot Story",
       "youtube_id": "1apUVd00LZo",
       "thumbnail": "thumbs/hunnypotthumbnail.png",
-      "description": "",
+      "category": "Documentary Trailer",
       "client": "MediaLiberated",
-      "year": "2025"
+      "year": "2025",
+      "description": ""
     },
     {
-      "title": "Trumer Pils Summer Ad",
+      "title": "Trumer Pils",
       "youtube_id": "tiAn1cn9_Uk",
       "thumbnail": "thumbs/trumerpilsthumbnail.png",
-      "description": "",
-      "client": "Trumer Pils",
-      "year": "2024"
+      "category": "Commercial",
+      "client": "",
+      "year": "2024",
+      "description": ""
     }
   ],
   "directing": [
     {
-      "title": "So Far So Good | Short Film",
+      "title": "So Far So Good",
       "youtube_id": "XLTsCWq8BFE",
-      "description": "",
+      "category": "Short Film",
       "client": "",
       "year": "2023",
+      "description": "",
       "thumbnail": "https://img.youtube.com/vi/XLTsCWq8BFE/hqdefault.jpg"
     },
     {
-      "title": "Sonos Spec Ad",
+      "title": "Sonos",
       "youtube_id": "jqEi_6IwNn8",
-      "description": "",
-      "client": "Spec",
+      "category": "Spec Commercial",
+      "client": "",
       "year": "2025",
+      "description": "",
       "thumbnail": "https://img.youtube.com/vi/jqEi_6IwNn8/hqdefault.jpg"
     },
     {
-      "title": "Bubble Butt | Short Film",
+      "title": "Bubble Butt",
       "youtube_id": "thI---iVuYI",
-      "description": "",
+      "category": "Short Film",
       "client": "",
       "year": "2018",
+      "description": "",
       "thumbnail": "https://img.youtube.com/vi/thI---iVuYI/hqdefault.jpg"
     },
     {
-      "title": "Ruslan Sirota - Won't He Do It (Live at Paramount Studios)",
+      "title": "Won't He Do It",
       "youtube_id": "Kk_RAl4Bay4",
-      "description": "",
+      "category": "Live Performance",
       "client": "Ruslan Sirota",
       "year": "2025",
+      "description": "",
       "thumbnail": "https://img.youtube.com/vi/Kk_RAl4Bay4/hqdefault.jpg"
     }
   ],
@@ -121,9 +135,20 @@
   "about": {
     "quote": "A preference for transcendence and taboo",
     "bio": "Graham Cooper is a director and editor. He holds a Master's Degree from the David Lynch School of Cinematic Arts.\n\nHis work spans commercial and narrative filmmaking with a focus on character-driven storytelling.\n\nHe is currently finishing his feature film debut, due out later this year.",
+    "clients": "Trumer Pils, Blaq Tuxedo, MediaLiberated, Ruslan Sirota",
     "email": "gg@grahamcooper.co",
     "vimeo": "",
     "youtube": "",
     "instagram": ""
+  },
+  "sinkhole": {
+    "published": "no",
+    "title": "Sinkhole",
+    "kicker": "Feature Film",
+    "status": "In post-production",
+    "logline": "",
+    "still": "",
+    "trailer_youtube_id": "",
+    "credits": ""
   }
 }

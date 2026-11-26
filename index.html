@@ -3,17 +3,38 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <meta name="description" content="G.G. Cooper — Director & Editor">
   <title>G.G. COOPER</title>
-  <link rel="icon" type="image/png" href="favicon.png">
+  <meta name="description" content="G.G. Cooper — Director & Editor based in Los Angeles.">
+  <meta name="theme-color" content="#0b0d0c">
+
+  <!-- Link previews (iMessage, Instagram, Slack, X, etc.) -->
+  <meta property="og:type" content="website">
+  <meta property="og:site_name" content="G.G. Cooper">
+  <meta property="og:title" content="G.G. Cooper — Director & Editor">
+  <meta property="og:description" content="Commercial, documentary and narrative work.">
+  <meta property="og:url" content="https://ggcooper.com/">
+  <meta property="og:image" content="https://ggcooper.com/thumbs/arcofathletethumbnail.png">
+  <meta property="og:image:width" content="2000">
+  <meta property="og:image:height" content="1125">
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:title" content="G.G. Cooper — Director & Editor">
+  <meta name="twitter:image" content="https://ggcooper.com/thumbs/arcofathletethumbnail.png">
+
+  <link rel="icon" type="image/png" href="favicon.png" media="(prefers-color-scheme: light)">
+  <link rel="icon" type="image/png" href="favicon-light.png" media="(prefers-color-scheme: dark)">
+  <link rel="apple-touch-icon" href="favicon.png">
   <link rel="stylesheet" href="style.css">
 </head>
 <body>
+
+  <!-- Creek: drifting current lines + click ripples (decorative) -->
+  <canvas id="creek" aria-hidden="true"></canvas>
 
   <!-- NAVIGATION -->
   <nav class="nav" id="nav">
     <a href="#home" class="nav-logo">G.G. COOPER</a>
     <div class="nav-links">
+      <a href="#sinkhole"  class="nav-link nav-link-feature" data-section="sinkhole" hidden>Sinkhole</a>
       <a href="#directing" class="nav-link" data-section="directing">Directing</a>
       <a href="#edit"      class="nav-link" data-section="edit">Edit</a>
       <a href="#about"     class="nav-link" data-section="about">About</a>
@@ -26,22 +47,24 @@
       <div class="ticker-set">
         <span>DIRECTOR</span><span class="dot"> &middot; </span>
         <span>EDITOR</span><span class="dot"> &middot; </span>
+        <span>FILMMAKER</span><span class="dot"> &middot; </span>
         <span>DIRECTOR</span><span class="dot"> &middot; </span>
         <span>EDITOR</span><span class="dot"> &middot; </span>
+        <span>FILMMAKER</span><span class="dot"> &middot; </span>
         <span>DIRECTOR</span><span class="dot"> &middot; </span>
         <span>EDITOR</span><span class="dot"> &middot; </span>
-        <span>DIRECTOR</span><span class="dot"> &middot; </span>
-        <span>EDITOR</span><span class="dot"> &middot; </span>
+        <span>FILMMAKER</span><span class="dot"> &middot; </span>
       </div>
       <div class="ticker-set" aria-hidden="true">
         <span>DIRECTOR</span><span class="dot"> &middot; </span>
         <span>EDITOR</span><span class="dot"> &middot; </span>
+        <span>FILMMAKER</span><span class="dot"> &middot; </span>
         <span>DIRECTOR</span><span class="dot"> &middot; </span>
         <span>EDITOR</span><span class="dot"> &middot; </span>
+        <span>FILMMAKER</span><span class="dot"> &middot; </span>
         <span>DIRECTOR</span><span class="dot"> &middot; </span>
         <span>EDITOR</span><span class="dot"> &middot; </span>
-        <span>DIRECTOR</span><span class="dot"> &middot; </span>
-        <span>EDITOR</span><span class="dot"> &middot; </span>
+        <span>FILMMAKER</span><span class="dot"> &middot; </span>
       </div>
     </div>
   </div>
@@ -49,53 +72,50 @@
   <!-- MAIN CONTENT -->
   <main id="main">
 
-    <!-- HOME / FEATURED SECTION -->
-    <section id="home" class="section work-section">
+    <section id="sec-home" class="section work-section">
       <h1 class="section-title">Work</h1>
-      <div class="video-grid featured-grid" id="home-grid">
+      <div class="video-grid" id="home-grid">
         <div class="loading">Loading&hellip;</div>
       </div>
     </section>
 
-    <!-- EDIT SECTION -->
-    <section id="edit" class="section work-section">
-      <h1 class="section-title">Edit</h1>
-      <div class="video-grid" id="edit-grid">
-        <div class="loading">Loading&hellip;</div>
-      </div>
-    </section>
-
-    <!-- DIRECTING SECTION -->
-    <section id="directing" class="section work-section">
+    <section id="sec-directing" class="section work-section">
       <h1 class="section-title">Directing</h1>
       <div class="video-grid" id="directing-grid">
         <div class="loading">Loading&hellip;</div>
       </div>
     </section>
 
-    <!-- ABOUT SECTION -->
-    <section id="about" class="section about-section">
+    <section id="sec-edit" class="section work-section">
+      <h1 class="section-title">Edit</h1>
+      <div class="video-grid" id="edit-grid">
+        <div class="loading">Loading&hellip;</div>
+      </div>
+    </section>
+
+    <section id="sec-sinkhole" class="section sinkhole-section">
+      <div id="sinkhole-content"></div>
+    </section>
+
+    <section id="sec-about" class="section about-section">
       <div id="about-content" class="about-content"></div>
     </section>
 
   </main>
 
+  <!-- CURSOR LABEL (desktop): plain type that trails the cursor -->
+  <div class="cursor-label" id="cursor-label" aria-hidden="true">
+    <div class="cl-title" id="cl-title"></div>
+    <div class="cl-meta" id="cl-meta"></div>
+    <div class="cl-desc" id="cl-desc"></div>
+  </div>
+
   <!-- VIDEO MODAL -->
   <div class="modal" id="video-modal" role="dialog" aria-modal="true">
     <div class="modal-backdrop" id="modal-backdrop"></div>
     <div class="modal-box">
-      <button class="modal-close" id="modal-close" aria-label="Close">&#x2715;</button>
+      <button class="modal-close" id="modal-close">Close</button>
       <div class="modal-video" id="modal-video"></div>
-    </div>
-  </div>
-
-  <!-- PHOTO LIGHTBOX -->
-  <div class="lightbox" id="lightbox" role="dialog" aria-modal="true">
-    <div class="lightbox-backdrop" id="lightbox-backdrop"></div>
-    <div class="lightbox-box">
-      <button class="lightbox-close" id="lightbox-close" aria-label="Close">&#x2715;</button>
-      <img id="lightbox-img" src="" alt="">
-      <p id="lightbox-caption"></p>
     </div>
   </div>
 

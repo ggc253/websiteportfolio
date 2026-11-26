@@ -1,5 +1,6 @@
-title: Blaq Diaries: The Story of Blaq Tuxedo
+title: Blaq Diaries
 youtube_id: rxRKXn65uF4
-description:
+category: Documentary
 client: Blaq Tuxedo
 year: 2025
+description:

@@ -1,5 +1,6 @@
-title: Bubble Butt | Short Film
+title: Bubble Butt
 youtube_id: thI---iVuYI
-description:
+category: Short Film
 client:
 year: 2018
+description:

@@ -60,6 +60,7 @@ import json
 import os
 import shutil
 import sys
+import time
 from pathlib import Path
 
 CONTENT_DIR  = Path("content")
@@ -75,7 +76,7 @@ def copy_custom_thumbnails() -> None:
     Edit/Directing) into thumbs/ so they can be served and referenced via a
     `thumbnail: thumbs/filename.png` line in the matching .txt file."""
     copied = []
-    for folder in (CONTENT_DIR / "Featured", CONTENT_DIR / "Edit", CONTENT_DIR / "Directing"):
+    for folder in (CONTENT_DIR / "Featured", CONTENT_DIR / "Edit", CONTENT_DIR / "Directing", CONTENT_DIR / "Sinkhole"):
         if not folder.exists():
             continue
         images = []
@@ -84,8 +85,19 @@ def copy_custom_thumbnails() -> None:
             images.extend(folder.glob(f"*{ext.upper()}"))
         for img in sorted(set(images)):
             THUMBS_OUT.mkdir(exist_ok=True)
-            shutil.copy2(img, THUMBS_OUT / img.name)
-            copied.append(img.name)
+            dst = THUMBS_OUT / img.name
+            # Skip unchanged files (same size) — avoids rewriting synced files
+            if dst.exists() and dst.stat().st_size == img.stat().st_size:
+                continue
+            for attempt in range(5):
+                try:
+                    shutil.copy2(img, dst)
+                    copied.append(img.name)
+                    break
+                except OSError:
+                    time.sleep(1)
+            else:
+                print(f"  ⚠  Could not copy {img.name} (file locked) — try again")
     if copied:
         print("\nCustom thumbnails copied to thumbs/:")
         for name in copied:
@@ -245,8 +257,26 @@ def main():
     print("\nAbout:")
     output["about"] = process_about(CONTENT_DIR / "about.txt")
 
-    with open(OUTPUT_JSON, "w", encoding="utf-8") as f:
+    print("\nSinkhole:")
+    sinkhole_file = CONTENT_DIR / "sinkhole.txt"
+    output["sinkhole"] = parse_txt(sinkhole_file) if sinkhole_file.exists() else {}
+    if output["sinkhole"]:
+        state = "published" if output["sinkhole"].get("published", "").lower() == "yes" else "hidden (preview only)"
+        print(f"  ✓  Sinkhole page loaded — {state}")
+
+    # Write to a temp file, then swap it in (avoids sync-lock errors on data.json)
+    tmp = OUTPUT_JSON.with_suffix(".json.tmp")
+    with open(tmp, "w", encoding="utf-8") as f:
         json.dump(output, f, indent=2, ensure_ascii=False)
+    for attempt in range(5):
+        try:
+            os.replace(tmp, OUTPUT_JSON)
+            break
+        except OSError:
+            time.sleep(1)
+    else:
+        print("  ⚠  Could not replace data.json (file locked) — run build again")
+        sys.exit(1)
 
     print()
     print("=" * 54)

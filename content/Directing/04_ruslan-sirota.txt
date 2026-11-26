@@ -1,5 +1,6 @@
-title: Ruslan Sirota - Won't He Do It (Live at Paramount Studios)
+title: Won't He Do It
 youtube_id: Kk_RAl4Bay4
-description:
+category: Live Performance
 client: Ruslan Sirota
 year: 2025
+description:

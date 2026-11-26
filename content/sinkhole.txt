@@ -1,0 +1,13 @@
+# Sinkhole — feature film page
+# Set "published: yes" to show it in the nav. While "no", preview it at
+# ggcooper.com/?preview#sinkhole
+# Put a still or poster in content/Sinkhole/ and set still: thumbs/<filename>
+# Credits: one per line, indented two spaces, "Role — Name"
+published: no
+title: Sinkhole
+kicker: Feature Film
+status: In post-production
+logline:
+still:
+trailer_youtube_id:
+credits:
