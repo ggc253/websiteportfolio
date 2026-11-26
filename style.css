@@ -947,6 +947,20 @@ body.spring-mode .video-card { background: var(--surface); }
   text-underline-offset: 4px;
 }
 
+/* Creeker Day title: cuts between typefaces; a fixed-height line so nothing below jumps */
+.creeker-section { --cr-base: clamp(48px, 7vw, 96px); }
+
+.cr-title {
+  height: calc(var(--cr-base) * 1.4);           /* constant, whatever the face */
+  display: flex;
+  align-items: center;
+  white-space: nowrap;
+  letter-spacing: 0.02em;
+}
+
+.cr-title { font-size: var(--cr-base); line-height: 1; }
+.cr-hint { line-height: 1; }
+
 .cr-observed {
   margin-top: -1.5rem;
   font-size: 1.05rem;

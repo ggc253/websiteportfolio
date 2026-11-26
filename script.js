@@ -381,7 +381,15 @@ function initCursorLabel() {
     const card = e.target.closest('.video-card[data-key]');
     if (!card) return;
     const v = cardRegistry[+card.dataset.key];
-    document.getElementById('cl-title').textContent = v.title || '';
+    const clt = document.getElementById('cl-title');
+    clt.textContent = v.title || '';
+    if (currentSection === 'creeker') {
+      const f = randomFont(CREEKER_FONTS[0]);
+      clt.style.fontFamily = f.f; clt.style.fontWeight = f.w; clt.style.fontStyle = f.i ? 'italic' : 'normal';
+      clt.style.fontSize = '1.15rem';
+    } else {
+      clt.style.fontFamily = clt.style.fontWeight = clt.style.fontStyle = clt.style.fontSize = '';
+    }
     document.getElementById('cl-meta').textContent  = metaLine(v);
     document.getElementById('cl-desc').textContent  = v.description || '';
     if (!label.on) { label.x = label.tx; label.y = label.ty; }
@@ -470,6 +478,111 @@ function renderSinkhole(s) {
     ${trailer}`;
 }
 
+// ---- CREEKER DAY TYPE ----
+// Every Creeker Day is many people's footage, many kinds of day. The title cuts
+// rapidly between ~60 typefaces, each fitted to the same width so the cuts land
+// like title cards. Fonts load only when needed.
+
+// [Google family name, weight, italic, uppercase]
+const CREEKER_FACES = [
+  ['Abril Fatface', 400, 0, 1], ['Alfa Slab One', 400, 0, 1], ['Anton', 400, 0, 1], ['Archivo Black', 400, 0, 1],
+  ['Bebas Neue', 400, 0, 1], ['Black Ops One', 400, 0, 1], ['Bodoni Moda', 700, 0, 1], ['Bungee', 400, 0, 1],
+  ['Bungee Shade', 400, 0, 1], ['Caveat', 700, 0, 0], ['Cinzel', 700, 0, 1], ['Cormorant Garamond', 600, 1, 0],
+  ['Courier Prime', 700, 0, 1], ['Creepster', 400, 0, 1], ['DM Serif Display', 400, 1, 0], ['Fascinate', 400, 0, 1],
+  ['Fraunces', 900, 0, 0], ['Fredoka', 700, 0, 0], ['Gloria Hallelujah', 400, 0, 0], ['Homemade Apple', 400, 0, 0],
+  ['IBM Plex Mono', 600, 0, 1], ['Indie Flower', 400, 0, 0], ['Instrument Serif', 400, 0, 0], ['Josefin Sans', 700, 0, 1],
+  ['Kalam', 700, 0, 0], ['Libre Baskerville', 700, 1, 0], ['Limelight', 400, 0, 1], ['Lobster', 400, 0, 0],
+  ['Major Mono Display', 400, 0, 0], ['Monoton', 400, 0, 1], ['Nosifer', 400, 0, 1], ['Orbitron', 800, 0, 1],
+  ['Oswald', 700, 0, 1], ['Pacifico', 400, 0, 0], ['Permanent Marker', 400, 0, 1], ['Playfair Display', 400, 1, 0],
+  ['Poiret One', 400, 0, 1], ['Press Start 2P', 400, 0, 1], ['Righteous', 400, 0, 1], ['Rubik Mono One', 400, 0, 1],
+  ['Rye', 400, 0, 1], ['Sancreek', 400, 0, 1], ['Satisfy', 400, 0, 0], ['Shadows Into Light', 400, 0, 0],
+  ['Shrikhand', 400, 0, 0], ['Silkscreen', 400, 0, 1], ['Six Caps', 400, 0, 1], ['Space Mono', 700, 0, 1],
+  ['Special Elite', 400, 0, 1], ['Staatliches', 400, 0, 1], ['Syne', 800, 0, 1], ['Ultra', 400, 0, 1],
+  ['UnifrakturMaguntia', 400, 0, 0], ['Unbounded', 800, 0, 1], ['VT323', 400, 0, 1], ['Yeseva One', 400, 0, 0],
+  ['Zilla Slab', 700, 1, 0], ['Libre Barcode 39 Text', 400, 0, 1], ['Bagel Fat One', 400, 0, 0], ['Eater', 400, 0, 1],
+];
+
+const CREEKER_FONTS = [{ n: null, f: "'Helvetica Neue', Helvetica, Arial, sans-serif", w: 700, i: false, up: true }]
+  .concat(CREEKER_FACES.map(([n, w, i, up]) => ({ n, f: `'${n}'`, w, i: !!i, up: !!up })));
+
+let creekerFontsLoaded = false;
+function ensureCreekerFonts() {
+  if (creekerFontsLoaded) return;
+  creekerFontsLoaded = true;
+  const fams = CREEKER_FACES.map(([n, w, i]) => {
+    const name = n.replace(/ /g, '+');
+    if (i) return `family=${name}:ital,wght@1,${w}`;
+    if (w !== 400) return `family=${name}:wght@${w}`;
+    return `family=${name}`;
+  }).join('&');
+  const link = document.createElement('link');
+  link.rel = 'stylesheet';
+  link.href = `https://fonts.googleapis.com/css2?${fams}&display=swap`;
+  document.head.appendChild(link);
+}
+
+const randomFont = (not, pool = CREEKER_FONTS) => {
+  if (pool.length < 2) return pool[0];
+  let f;
+  do { f = pool[Math.floor(Math.random() * pool.length)]; } while (f === not);
+  return f;
+};
+
+// Fit a face to a fixed width (and a height ceiling) so every cut is the same size
+const measureCtx = document.createElement('canvas').getContext('2d');
+function fitScale(font, text) {
+  const t = font.up ? text.toUpperCase() : text;
+  measureCtx.font = `${font.i ? 'italic ' : ''}${font.w} 100px ${font.f}`;
+  const width = measureCtx.measureText(t).width || 1;
+  return width;                       // width at 100px
+}
+
+let creekerCycle = 0;
+function startCreekerTitle() {
+  clearTimeout(creekerCycle);
+  const el = document.getElementById('cr-title');
+  if (!el) return;
+  const text = el.textContent;
+  const ready = [CREEKER_FONTS[0]];
+  const widths = new Map([[CREEKER_FONTS[0], fitScale(CREEKER_FONTS[0], text)]]);
+
+  // Only cut to faces that have actually loaded (no flashes of fallback type)
+  if (document.fonts && document.fonts.load) {
+    CREEKER_FONTS.slice(1).forEach((font) => {
+      const spec = `${font.i ? 'italic ' : ''}${font.w} 100px ${font.f}`;
+      document.fonts.load(spec, text).then(() => {
+        if (document.fonts.check(spec, text)) { widths.set(font, fitScale(font, text)); ready.push(font); }
+      }).catch(() => {});
+    });
+  }
+
+  const apply = (font) => {
+    const base = Math.min(96, Math.max(48, innerWidth * 0.07));          // same as --cr-base in CSS
+    const target = widths.get(CREEKER_FONTS[0]) * base / 100;          // Helvetica's width sets the box
+    let size = target / widths.get(font) * 100;
+    size = Math.min(size, base * 1.35);                                 // keep very condensed faces in the frame
+    el.style.fontFamily = font.f;
+    el.style.fontWeight = font.w;
+    el.style.fontStyle = font.i ? 'italic' : 'normal';
+    el.style.textTransform = font.up ? 'uppercase' : 'none';
+    el.style.fontSize = `${size.toFixed(1)}px`;
+  };
+  apply(CREEKER_FONTS[0]);
+  if (matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+
+  let current = CREEKER_FONTS[0];
+  // One cut every half second
+  const CUT_MS = 500;
+  const tick = () => {
+    const t = document.getElementById('cr-title');
+    if (!t || currentSection !== 'creeker') return;
+    current = randomFont(current, ready);
+    apply(current);
+    creekerCycle = setTimeout(tick, CUT_MS);
+  };
+  creekerCycle = setTimeout(tick, CUT_MS);
+}
+
 // ---- CREEKER DAY ----
 // Every July 4th since 2017. The holiday that replaced the Fourth of July.
 
@@ -493,7 +606,11 @@ function renderHolidayNote() {
   const el = document.getElementById('holiday-note');
   if (!el) return;
   const c = creekerDay();
-  const link = '<a href="#creeker">Creeker Day</a>';
+  ensureCreekerFonts();
+  const hint = randomFont(CREEKER_FONTS[0]);
+  const style = `font-family:${hint.f.replace(/"/g, "'")};font-weight:${hint.w};font-style:${hint.i ? 'italic' : 'normal'};`
+              + 'font-size:1.05em';
+  const link = `<a href="#creeker" class="cr-hint" style="${style}">Creeker Day</a>`;
   el.innerHTML = c.today
     ? `Today is ${link}.`
     : `The next ${link} is July 4, ${c.year}. ${c.days.toLocaleString()} ${c.days === 1 ? 'day' : 'days'} to go.`;
@@ -511,7 +628,7 @@ function renderCreeker(cd) {
     : `The ${ordinal(c.edition)} annual Creeker Day is in ${c.days.toLocaleString()} ${c.days === 1 ? 'day' : 'days'}.`;
 
   container.innerHTML = `
-    <h1 class="section-title">${escHtml(cd.title || 'Creeker Day')}</h1>
+    <h1 class="section-title cr-title" id="cr-title">${escHtml(cd.title || 'Creeker Day')}</h1>
     <p class="cr-observed">Observed every July 4th since ${since}.</p>
     <p class="cr-count">${count}</p>
     ${intro ? `<p class="cr-intro">${escHtml(intro)}</p>` : ''}
@@ -523,6 +640,8 @@ function renderCreeker(cd) {
     youtube_id: v.youtube_id,
     thumbnail: v.thumbnail,
   }));
+  ensureCreekerFonts();
+  startCreekerTitle();
   if (videos.length) renderVideoGrid('creeker-grid', videos);
   else document.getElementById('creeker-grid').innerHTML = '<p class="empty-state">The films are on their way.</p>';
 }
