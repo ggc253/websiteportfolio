@@ -693,23 +693,60 @@ function renderHolidayNote() {
     : `The next ${link} is July 4, ${c.year}. ${c.days.toLocaleString()} ${c.days === 1 ? 'day' : 'days'} to go.`;
 }
 
+let creekerClock = 0;
 function renderCreeker(cd) {
   const container = document.getElementById('creeker-content');
   if (!container) return;
   const c = creekerDay();
   const since = parseInt(cd.since, 10) || 2017;
-  const intro = String(cd.intro || '').replace(/\s*\n\s*/g, ' ');
+  const name = cd.title || 'Creeker Day';
 
-  const count = c.today
-    ? `Today is the ${ordinal(c.edition)} annual Creeker Day.`
-    : `The ${ordinal(c.edition)} annual Creeker Day is in ${c.days.toLocaleString()} ${c.days === 1 ? 'day' : 'days'}.`;
+  // The intro is a short poem: verses split by blank lines. "Creeker Day" in the
+  // last verse becomes the page title, which has every year's footage in its letters.
+  const titleHtml = `<h1 class="cr-title" id="cr-title"><span class="cr-t">${escHtml(name)}</span><span class="cr-t cr-t2" aria-hidden="true">${escHtml(name)}</span></h1>`;
+  const verses = String(cd.intro || '').split(/\n\s*\n/).map((v) => v.split('\n').map((l) => l.trim()).filter(Boolean)).filter((v) => v.length);
+  let titled = false;
+  const poem = verses.map((lines, vi) => {
+    const html = lines.map((l) => {
+      const at = l.indexOf(name);
+      if (vi === verses.length - 1 && at !== -1 && !titled) {
+        titled = true;
+        const before = l.slice(0, at).trim();
+        return `${before ? `<span class="cr-line">${escHtml(before)}</span>` : ''}${titleHtml}`;
+      }
+      return `<span class="cr-line">${escHtml(l)}</span>`;
+    }).join('');
+    return `<div class="cr-verse" style="--n:${vi}">${html}</div>`;
+  }).join('');
 
+  const anniversary = c.year - since;
+  const which = anniversary > 0 ? `${ordinal(anniversary)} Anniversary` : 'first';
   container.innerHTML = `
-    <h1 class="section-title cr-title" id="cr-title"><span class="cr-t">${escHtml(cd.title || 'Creeker Day')}</span><span class="cr-t cr-t2" aria-hidden="true">${escHtml(cd.title || 'Creeker Day')}</span></h1>
-    <p class="cr-observed">Observed every July 4th since ${since}.</p>
-    <p class="cr-count">${count}</p>
-    ${intro ? `<p class="cr-intro">${escHtml(intro)}</p>` : ''}
+    <div class="cr-poem" style="--verses:${verses.length}">
+      ${poem}
+      ${titled ? '' : `<div class="cr-verse" style="--n:${verses.length}">${titleHtml}</div>`}
+      <p class="cr-count" id="cr-count"></p>
+    </div>
     <div class="video-grid" id="creeker-grid"></div>`;
+
+  // A live countdown, to the second
+  const countEl = document.getElementById('cr-count');
+  const plural = (n, w) => `${n.toLocaleString()} ${w}${n === 1 ? '' : 's'}`;
+  const tick = () => {
+    if (currentSection !== 'creeker') { clearInterval(creekerClock); return; }
+    const now = new Date();
+    const d = creekerDay();
+    if (d.today) { countEl.textContent = `Today is the ${which} Creeker Day.`; return; }
+    let ms = new Date(d.year, 6, 4) - now;
+    const days = Math.floor(ms / 86400000); ms -= days * 86400000;
+    const hrs = Math.floor(ms / 3600000);   ms -= hrs * 3600000;
+    const min = Math.floor(ms / 60000);     ms -= min * 60000;
+    const sec = Math.floor(ms / 1000);
+    countEl.innerHTML = `The ${which} Creeker Day is in <span class="cr-num">${plural(days, 'day')}, ${plural(hrs, 'hour')}, ${plural(min, 'minute')} and ${plural(sec, 'second')}</span>.`;
+  };
+  clearInterval(creekerClock);
+  tick();
+  creekerClock = setInterval(tick, 1000);
 
   const videos = (cd.videos || []).slice().sort((a, b) => b.year - a.year).map((v) => ({
     title: `Creeker Day ${v.year}`,
@@ -725,6 +762,60 @@ function renderCreeker(cd) {
   startCreekerTitle([...new Set(stills.filter(Boolean))]);
   if (videos.length) { renderVideoGrid('creeker-grid', videos); initFlipbooks(document.getElementById('creeker-grid')); }
   else document.getElementById('creeker-grid').innerHTML = '<p class="empty-state">The films are on their way.</p>';
+
+  // When the title lands, a small firework goes up behind it. Point at it for another.
+  const title = document.getElementById('cr-title');
+  const calm = matchMedia('(prefers-reduced-motion: reduce)').matches;
+  if (title && !calm) {
+    const landAt = (verses.length - 1) * 700 + 900;
+    setTimeout(() => { if (currentSection === 'creeker') creekerFirework(title); }, landAt);
+    let lastPop = 0;
+    title.addEventListener('mouseenter', () => {
+      if (Date.now() - lastPop < 1400) return;
+      lastPop = Date.now();
+      creekerFirework(title);
+    });
+  }
+}
+
+// A small, quiet firework: a few dozen sparks in cream and faded red that rise,
+// open, drift down and go out. Drawn on a canvas sitting over the title.
+function creekerFirework(el) {
+  const cv = document.createElement('canvas');
+  cv.className = 'cr-firework';
+  el.appendChild(cv);
+  const w = cv.offsetWidth, h = cv.offsetHeight;
+  const dpr = Math.min(window.devicePixelRatio || 1, 2);
+  cv.width = w * dpr; cv.height = h * dpr;
+  const ctx = cv.getContext('2d');
+  ctx.scale(dpr, dpr);
+  const cx = w * (0.25 + Math.random() * 0.5), cy = h * (0.22 + Math.random() * 0.12);
+  const colors = ['240,234,219', '196,100,79', '240,214,170'];
+  const sparks = Array.from({ length: 34 }, (_, i) => {
+    const a = (i / 34) * Math.PI * 2 + Math.random() * 0.2;
+    const sp = 1.1 + Math.random() * 1.1;
+    return { x: cx, y: cy, vx: Math.cos(a) * sp, vy: Math.sin(a) * sp, c: colors[i % 3], trail: [] };
+  });
+  const t0 = performance.now();
+  const step = (now) => {
+    const t = (now - t0) / 1600;
+    ctx.clearRect(0, 0, w, h);
+    if (t >= 1) { cv.remove(); return; }
+    const fade = 1 - t;
+    for (const p of sparks) {
+      p.trail.push([p.x, p.y]); if (p.trail.length > 6) p.trail.shift();
+      p.vx *= 0.965; p.vy = p.vy * 0.965 + 0.035;     // air, then a little gravity
+      p.x += p.vx; p.y += p.vy;
+      ctx.strokeStyle = `rgba(${p.c},${(0.55 * fade).toFixed(3)})`;
+      ctx.lineWidth = 1;
+      ctx.beginPath();
+      p.trail.forEach(([x, y], k) => (k ? ctx.lineTo(x, y) : ctx.moveTo(x, y)));
+      ctx.lineTo(p.x, p.y);
+      ctx.stroke();
+    }
+    requestAnimationFrame(step);
+  };
+  requestAnimationFrame(step);
 }
 
 // Hovering a year flips through frames from across that day's film, like
@@ -823,14 +914,14 @@ function renderSpring(sp) {
     }
   }
 
-  const intro = String(sp.intro || '').replace(/\s*\n\s*/g, ' ');
+  const intro = String(sp.intro || '').split('\n').map((l) => l.trim()).filter(Boolean);
 
   container.innerHTML = `
     <p class="sp-kicker">${escHtml(sp.kicker || 'A documentary')}</p>
     <h1 class="sp-title">${escHtml(sp.title || 'One Afternoon in Spring')}</h1>
     <p class="sp-coming">Coming in ${release}.</p>
     <p class="sp-count">${days.toLocaleString()} afternoons from now.</p>
-    ${intro ? `<p class="sp-intro">${escHtml(intro)}</p>` : ''}
+    ${intro.length ? `<p class="sp-intro">${intro.map(escHtml).join('<br>')}</p>` : ''}
     <div class="sp-ledger">${rows.join('')}</div>`;
 }
 

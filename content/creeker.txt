@@ -6,8 +6,15 @@
 #   2018 — https://youtu.be/XXXXXXXXXXX — thumbs/creeker2018.png
 title: Creeker Day
 since: 2017
-intro: Every July 4th, people send me footage of their day, and I cut it into one film.
-  It's been the holiday since 2017.
+# The intro is a short poem. Blank line = new verse. The words "Creeker Day" in the
+# last verse become the page title. The countdown line is added automatically.
+intro: Every July 4th since 2017,
+  people across the world record their day
+
+  It has since become an international holiday
+  with fireworks, parades, and barbecue
+
+  We call it Creeker Day
 videos:
   2017 — https://youtu.be/CIuISq1CZEQ
   2018 — https://youtu.be/koZzzm7aNFE

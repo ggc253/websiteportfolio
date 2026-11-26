@@ -7,6 +7,6 @@
 title: One Afternoon in Spring
 kicker: A documentary
 release: 2047
-intro: One trailer a year, every year, from 2022 until the film is finished.
-  What it's about is still being found.
+intro: One trailer a year, every year, until the film comes out.
+  What it's about...TBD
 trailers:

@@ -947,8 +947,7 @@ body.spring-mode .video-card { background: var(--surface); }
   color: var(--text-dim);
 }
 
-.holiday-note a,
-.cr-intro a {
+.holiday-note a {
   color: var(--text);
   text-decoration: underline;
   text-decoration-color: var(--accent);
@@ -968,15 +967,46 @@ body.creeker-mode {
 
 body, .nav, .ticker-wrap { transition: background-color 1.2s ease, color 1.2s ease; }
 
-/* Creeker Day title: a window onto every year's footage */
+/* Creeker Day: a short poem, centred like an intertitle. The verses arrive one
+   at a time; the last one lands on the title, which has every year's footage in
+   its letters, and a small firework goes up behind it. */
+.creeker-section { text-align: center; }
+
+.cr-poem {
+  max-width: 40rem;
+  margin: 2.5rem auto 5rem;
+  font-size: clamp(1.05rem, 1.6vw, 1.25rem);
+  line-height: 1.6;
+  color: var(--text-dim);
+}
+
+.cr-verse { margin-bottom: 1.9rem; }
+.cr-line { display: block; }
+
+/* One verse after another */
+.section.creeker-section.visible .cr-verse,
+.section.creeker-section.visible .cr-count {
+  animation: verse-in 1.1s cubic-bezier(0.22, 0.61, 0.36, 1) both;
+  animation-delay: calc(var(--n, 0) * 0.7s + 0.3s);
+}
+.section.creeker-section.visible .cr-count { animation-delay: calc(var(--verses) * 0.7s + 0.9s); }
+@keyframes verse-in {
+  from { opacity: 0; transform: translateY(8px); }
+  to   { opacity: 1; transform: none; }
+}
+
+/* The title: a window onto every year's footage */
 .cr-title {
   position: relative;
   display: inline-block;
-  font-size: clamp(3.6rem, 12vw, 10.5rem);
+  margin-top: 0.35rem;
+  font-size: clamp(2.5rem, 5.2vw, 4rem);
   font-weight: 800;
   letter-spacing: -0.02em;
-  line-height: 0.92;
+  line-height: 1;
   white-space: nowrap;
+  color: var(--text);
+  cursor: default;
 }
 
 .cr-t { display: block; }
@@ -989,31 +1019,35 @@ body, .nav, .ticker-wrap { transition: background-color 1.2s ease, color 1.2s ea
   -webkit-background-clip: text;
   background-clip: text;
   color: transparent;
-  -webkit-text-stroke: 1px rgba(240, 234, 219, 0.22);   /* keeps dark footage legible */
-  filter: brightness(1.4) saturate(0.85);
+  -webkit-text-stroke: 0.6px rgba(240, 234, 219, 0.3);  /* keeps dark footage legible */
+  filter: brightness(1.45) saturate(0.85);
 }
 
 .cr-title.footage .cr-t2 { transition: opacity 1.8s cubic-bezier(0.45, 0, 0.25, 1); }
 
-.cr-count { color: var(--text-dim); }
-
-.cr-observed {
-  margin-top: -1.25rem;
-  font-size: 1.05rem;
+/* The firework canvas: a generous box around the title, behind nothing */
+.cr-firework {
+  position: absolute;
+  left: -40%;
+  top: -160%;
+  width: 180%;
+  height: 300%;
+  pointer-events: none;
 }
 
 .cr-count {
-  margin-top: 0.3rem;
+  text-wrap: balance;
+  margin-top: 0.4rem;
   font-size: 0.95rem;
   color: var(--text-dim);
 }
+.cr-num { color: var(--text); font-variant-numeric: tabular-nums; }
 
-.cr-intro {
-  margin: 2.25rem 0 3rem;
-  max-width: 34rem;
-  font-size: 1rem;
-  line-height: 1.7;
-  color: var(--text-dim);
+.creeker-section .video-grid { text-align: left; }
+
+@media (prefers-reduced-motion: reduce) {
+  .section.creeker-section.visible .cr-verse,
+  .section.creeker-section.visible .cr-count { animation: none; }
 }
 
 /* ---- STORY THREAD (a way into Creeker Day) ---- */
@@ -1122,16 +1156,16 @@ body.weaving #main { opacity: 0; transition: opacity 1.2s ease; }
 
 /* Sinkhole, bottom right of the homepage. Quiet until you come near:
    every so often a faint rose ring opens out of the word. Point at it and the
-   letters settle into the ground at uneven depths, the rings quicken, and
-   "Feature film" surfaces beside it. */
+   letters settle into the ground at uneven depths and the rings quicken.
+   Set in IM Fell English SC, the old-print face of the Sinkhole tagline. */
 .home-feature {
   position: relative;
   display: inline-flex;
   align-items: baseline;
-  gap: 0.9rem;
-  font-size: 0.95rem;
-  font-weight: 700;
-  letter-spacing: 0.02em;
+  font-family: 'IM Fell English SC', Georgia, serif;
+  font-size: 1.2rem;
+  font-weight: 400;
+  letter-spacing: 0.16em;
   color: var(--text-dim);
   text-decoration: none;
   white-space: nowrap;
@@ -1157,17 +1191,6 @@ body.weaving #main { opacity: 0; transition: opacity 1.2s ease; }
   transition-delay: calc(var(--i) * 45ms);
 }
 
-.hf-sub {
-  position: relative;
-  font-size: 0.78rem;
-  font-weight: 400;
-  letter-spacing: 0;
-  color: var(--text-faint);
-  opacity: 0;
-  transform: translateX(6px);
-  transition: opacity 0.8s ease, transform 0.9s cubic-bezier(0.22, 0.61, 0.36, 1);
-}
-
 .home-feature:hover,
 .home-feature:focus-visible { color: var(--text); outline: none; }
 .home-feature:hover .hf-word span,
@@ -1175,8 +1198,6 @@ body.weaving #main { opacity: 0; transition: opacity 1.2s ease; }
   transform: translateY(calc(var(--d) * 1em));
   color: rgb(232, 196, 202);           /* the faintest rose, as on the Sinkhole page */
 }
-.home-feature:hover .hf-sub,
-.home-feature:focus-visible .hf-sub { opacity: 1; transform: none; }
 
 @media (max-width: 600px) {
   .home-feature { padding-left: 0; }
