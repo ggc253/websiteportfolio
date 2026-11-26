@@ -76,7 +76,7 @@ def copy_custom_thumbnails() -> None:
     Edit/Directing) into thumbs/ so they can be served and referenced via a
     `thumbnail: thumbs/filename.png` line in the matching .txt file."""
     copied = []
-    for folder in (CONTENT_DIR / "Featured", CONTENT_DIR / "Edit", CONTENT_DIR / "Directing", CONTENT_DIR / "Sinkhole", CONTENT_DIR / "Spring"):
+    for folder in (CONTENT_DIR / "Featured", CONTENT_DIR / "Edit", CONTENT_DIR / "Directing", CONTENT_DIR / "Sinkhole", CONTENT_DIR / "Spring", CONTENT_DIR / "Creeker"):
         if not folder.exists():
             continue
         images = []
@@ -225,26 +225,34 @@ def youtube_id_from(value: str) -> str:
     return m.group(1) if m else value.split("?")[0]
 
 
-def process_spring(spring_file: Path) -> dict:
-    """One Afternoon in Spring — one trailer per year. Lines look like:
-       2022 — https://youtu.be/ID          (optionally:  — thumbs/file.png)"""
-    if not spring_file.exists():
-        return {}
-    data = parse_txt(spring_file)
-    trailers = []
-    for line in data.get("trailers", "").splitlines():
+def parse_year_lines(text: str) -> list:
+    """Lines like  2022 — https://youtu.be/ID  (optionally  — thumbs/file.png)."""
+    items = []
+    for line in text.splitlines():
         parts = [p.strip() for p in line.replace("–", "—").split("—") if p.strip()]
         if len(parts) < 2 or not parts[0][:4].isdigit():
             continue
         t = {"year": int(parts[0][:4]), "youtube_id": youtube_id_from(parts[1])}
         if len(parts) > 2:
             t["thumbnail"] = parts[2]
-        trailers.append(t)
+        items.append(t)
         print(f"  ✓  {t['year']}  (id: {t['youtube_id']})")
-    if not trailers:
-        print("  (no trailers yet)")
-    data["trailers"] = sorted(trailers, key=lambda t: t["year"])
+    if not items:
+        print("  (none yet)")
+    return sorted(items, key=lambda t: t["year"])
+
+
+def process_yearly(path: Path, list_key: str) -> dict:
+    """A page made of one video per year (Spring trailers, Creeker Days)."""
+    if not path.exists():
+        return {}
+    data = parse_txt(path)
+    data[list_key] = parse_year_lines(data.get(list_key, ""))
     return data
+
+
+def process_spring(spring_file: Path) -> dict:
+    return process_yearly(spring_file, "trailers")
 
 
 # ---- MAIN ----
@@ -296,6 +304,9 @@ def main():
 
     print("\nOne Afternoon in Spring:")
     output["spring"] = process_spring(CONTENT_DIR / "spring.txt")
+
+    print("\nCreeker Day:")
+    output["creeker"] = process_yearly(CONTENT_DIR / "creeker.txt", "videos")
 
     # Write to a temp file, then swap it in (avoids sync-lock errors on data.json)
     tmp = OUTPUT_JSON.with_suffix(".json.tmp")

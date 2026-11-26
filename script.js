@@ -12,7 +12,7 @@ function sinkholeVisible() {
 }
 
 function validSections() {
-  const base = ['home', 'directing', 'edit', 'about', 'spring'];
+  const base = ['home', 'directing', 'edit', 'about', 'spring', 'creeker'];
   return sinkholeVisible() ? base.concat('sinkhole') : base;
 }
 
@@ -123,17 +123,19 @@ function showSection(section) {
 
   document.title = section === 'home'   ? 'G.G. COOPER'
                  : section === 'spring' ? 'One Afternoon in Spring'
+                 : section === 'creeker' ? 'Creeker Day — G.G. Cooper'
                  : `${section.charAt(0).toUpperCase()}${section.slice(1)} — G.G. Cooper`;
 }
 
 function renderSection(section) {
   if (!siteData) return;
   ({
-    home:      () => renderVideoGrid('home-grid',      siteData.featured  || []),
+    home:      () => { renderVideoGrid('home-grid', siteData.featured || []); renderHolidayNote(); },
     directing: () => renderVideoGrid('directing-grid', siteData.directing || []),
     edit:      () => renderVideoGrid('edit-grid',      siteData.edit      || []),
     sinkhole:  () => renderSinkhole(siteData.sinkhole || {}),
     spring:    () => renderSpring(siteData.spring || {}),
+    creeker:   () => renderCreeker(siteData.creeker || {}),
     about:     () => renderAbout(siteData.about || {}),
   })[section]?.();
 }
@@ -303,6 +305,63 @@ function renderSinkhole(s) {
     ${trailer}`;
 }
 
+// ---- CREEKER DAY ----
+// Every July 4th since 2017. The holiday that replaced the Fourth of July.
+
+function ordinal(n) {
+  const s = ['th', 'st', 'nd', 'rd'], v = n % 100;
+  return n + (s[(v - 20) % 10] || s[v] || s[0]);
+}
+
+function creekerDay() {
+  const since = parseInt((siteData && siteData.creeker && siteData.creeker.since), 10) || 2017;
+  const now = new Date();
+  const today = now.getMonth() === 6 && now.getDate() === 4;
+  let year = now.getFullYear();
+  if (!today && (now.getMonth() > 6 || (now.getMonth() === 6 && now.getDate() > 4))) year++;
+  const midnight = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+  const days = Math.round((new Date(year, 6, 4) - midnight) / 86400000);
+  return { today, year, days, edition: year - since + 1 };
+}
+
+function renderHolidayNote() {
+  const el = document.getElementById('holiday-note');
+  if (!el) return;
+  const c = creekerDay();
+  const link = '<a href="#creeker">Creeker Day</a>';
+  el.innerHTML = c.today
+    ? `Today is ${link}.`
+    : `The next ${link} is July 4, ${c.year}. ${c.days.toLocaleString()} ${c.days === 1 ? 'day' : 'days'} to go.`;
+}
+
+function renderCreeker(cd) {
+  const container = document.getElementById('creeker-content');
+  if (!container) return;
+  const c = creekerDay();
+  const since = parseInt(cd.since, 10) || 2017;
+  const intro = String(cd.intro || '').replace(/\s*\n\s*/g, ' ');
+
+  const count = c.today
+    ? `Today is the ${ordinal(c.edition)} annual Creeker Day.`
+    : `The ${ordinal(c.edition)} annual Creeker Day is in ${c.days.toLocaleString()} ${c.days === 1 ? 'day' : 'days'}.`;
+
+  container.innerHTML = `
+    <h1 class="section-title">${escHtml(cd.title || 'Creeker Day')}</h1>
+    <p class="cr-observed">Observed every July 4th since ${since}.</p>
+    <p class="cr-count">${count}</p>
+    ${intro ? `<p class="cr-intro">${escHtml(intro)}</p>` : ''}
+    <div class="video-grid" id="creeker-grid"></div>`;
+
+  const videos = (cd.videos || []).slice().sort((a, b) => b.year - a.year).map((v) => ({
+    title: `Creeker Day ${v.year}`,
+    year: `July 4, ${v.year}`,
+    youtube_id: v.youtube_id,
+    thumbnail: v.thumbnail,
+  }));
+  if (videos.length) renderVideoGrid('creeker-grid', videos);
+  else document.getElementById('creeker-grid').innerHTML = '<p class="empty-state">The films are on their way.</p>';
+}
+
 // ---- ONE AFTERNOON IN SPRING ----
 // Hidden page (FILMMAKER in the ticker). A ledger of one trailer per year until 2047.
 
@@ -433,7 +492,10 @@ function initTicker() {
   const sets = document.querySelectorAll('.ticker-set');
   const inner = document.querySelector('.ticker-inner');
   if (sets.length < 2 || !inner) return;
-  const unit = sets[0].innerHTML;
+  // On July 4th the ticker belongs to the holiday
+  const unit = creekerDay().today
+    ? '<span>HAPPY CREEKER DAY</span><span class="dot"> &middot; </span>'.repeat(3)
+    : sets[0].innerHTML;
 
   function fill() {
     sets[0].innerHTML = unit;

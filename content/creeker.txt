@@ -1,0 +1,11 @@
+# Creeker Day — ggcooper.com/#creeker (linked from the line under the homepage grid)
+# Add one video per line under "videos:", indented two spaces:  YEAR — YouTube link or ID
+# Example:
+#   2017 — https://youtu.be/XXXXXXXXXXX
+# Optional custom thumbnail: put the image in content/Creeker/ and add it after the link:
+#   2018 — https://youtu.be/XXXXXXXXXXX — thumbs/creeker2018.png
+title: Creeker Day
+since: 2017
+intro: Every July 4th, people send me footage of their day, and I cut it into one film.
+  It's been the holiday since 2017.
+videos:

@@ -674,6 +674,43 @@ body.spring-mode .video-card { background: var(--surface); }
 /* Once there, the page itself surfaces slowly */
 .section.spring-section { transition: opacity 2.4s ease 0.4s; }
 
+/* ---- CREEKER DAY ---- */
+
+.holiday-note {
+  margin-top: 4.5rem;
+  padding-top: 1.25rem;
+  border-top: 1px solid var(--rule);
+  font-size: 0.95rem;
+  color: var(--text-dim);
+}
+
+.holiday-note a,
+.cr-intro a {
+  color: var(--text);
+  text-decoration: underline;
+  text-decoration-color: var(--accent);
+  text-underline-offset: 4px;
+}
+
+.cr-observed {
+  margin-top: -1.5rem;
+  font-size: 1.05rem;
+}
+
+.cr-count {
+  margin-top: 0.3rem;
+  font-size: 0.95rem;
+  color: var(--text-dim);
+}
+
+.cr-intro {
+  margin: 2.25rem 0 3rem;
+  max-width: 34rem;
+  font-size: 1rem;
+  line-height: 1.7;
+  color: var(--text-dim);
+}
+
 /* ---- RESPONSIVE ---- */
 
 @media (max-width: 640px) {
