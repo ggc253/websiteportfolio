@@ -1037,100 +1037,104 @@ body.sink-mode .story-thread { display: none; }
 body.weaving #main { opacity: 0; transition: opacity 1.2s ease; }
 .section.creeker-section { transition: opacity 1.8s ease 0.2s; }
 
-/* ---- HOME: THE VIEWFINDER ---- */
+/* ---- HOME: THREE WORDS ---- */
 
 .visually-hidden {
   position: absolute; width: 1px; height: 1px; overflow: hidden;
   clip: rect(0 0 0 0); white-space: nowrap;
 }
 
-.home-section { padding-top: 3rem; }
-
-.viewfinder {
-  display: flex;
+.section.home-section {
+  display: none;
   flex-direction: column;
-  align-items: center;
-  /* as wide as possible while the frame, the words and some air fit on one screen */
-  --vf-w: min(100%, calc((100vh - var(--work-top) - 14rem) * 2.39));
+  padding-top: 0;
+  padding-bottom: 2rem;
 }
+.section.home-section.active { display: flex; }
 
-.vf-frame {
-  position: relative;
-  width: 100%;
-  max-width: var(--vf-w);
-  aspect-ratio: 2.39 / 1;
-  overflow: hidden;
-  background: #11120f;
-  transform: scaleY(0.004);
-  transition: transform 1.3s cubic-bezier(0.7, 0, 0.2, 1),
-              max-width 1s cubic-bezier(0.7, 0, 0.2, 1),
-              opacity 0.6s ease;
-}
-
-.viewfinder.open .vf-frame { transform: none; }
-
-/* Stills stack in the frame and dissolve between each other */
-.vf-frame > .vf-slide {
-  position: absolute;
-  inset: 0;
-  aspect-ratio: auto;
-  margin: 0;
-  opacity: 0;
-  pointer-events: none;
-  transition: opacity 1.2s cubic-bezier(0.45, 0, 0.25, 1);
-}
-
-.vf-frame > .vf-slide.on { opacity: 1; pointer-events: auto; }
-.vf-frame .vf-slide .video-thumb { filter: saturate(0.86) sepia(0.07) brightness(0.93); }
-.vf-frame .vf-slide:hover .video-thumb { filter: none; }
-.vf-frame .sk-portal .portal-title { width: min(30%, 320px); }
-
-.vf-words {
+.home-words {
+  flex: 1;
   display: flex;
   justify-content: center;
-  flex-wrap: wrap;
-  gap: 0.5rem 3rem;
-  margin-top: 2.25rem;
-  opacity: 0;
-  transition: opacity 0.9s ease 0.9s;
+  align-items: center;
+  gap: clamp(1.75rem, 5vw, 4.5rem);
+  min-height: 50vh;
 }
 
-.viewfinder.open .vf-words { opacity: 1; }
-
-.vf-words a {
-  position: relative;
-  font-size: clamp(1.05rem, 1.6vw, 1.3rem);
+.home-words a,
+.glide-word {
+  font-size: clamp(1.35rem, 2.4vw, 1.9rem);
   font-weight: 700;
-  color: var(--text-dim);
+  letter-spacing: -0.02em;
+  line-height: 1;
+  color: var(--text);
   text-decoration: none;
-  padding-bottom: 0.4rem;
-  transition: color 0.4s ease;
+  white-space: nowrap;
 }
 
-.vf-words a::after {
+.home-words a {
+  position: relative;
+  opacity: 0;
+  transform: translateY(8px);
+  transition: opacity 0.9s cubic-bezier(0.22, 0.61, 0.36, 1), transform 0.9s cubic-bezier(0.22, 0.61, 0.36, 1);
+}
+.home-words a:nth-child(2) { transition-delay: 0.11s; }
+.home-words a:nth-child(3) { transition-delay: 0.22s; }
+.home-words.open a { opacity: 1; transform: none; }
+
+/* A hairline draws under the word you point at */
+.home-words a::after {
   content: '';
   position: absolute;
-  left: 0; right: 0; bottom: 0;
+  left: 0; right: 0; bottom: -0.45em;
   height: 1px;
-  background: var(--text);
+  background: currentColor;
   transform: scaleX(0);
   transform-origin: left;
-  transition: transform 0.5s cubic-bezier(0.7, 0, 0.2, 1);
+  transition: transform 0.45s cubic-bezier(0.65, 0, 0.25, 1);
+}
+.home-words a:hover::after,
+.home-words a:focus-visible::after,
+.home-words a.chosen::after { transform: scaleX(1); }
+.home-words a:focus-visible { outline: none; }
+
+/* Leaving: the other two fade quickly */
+.home-words.leaving a { transition: opacity 0.25s ease; transition-delay: 0s; }
+.home-words.leaving a:not(.chosen) { opacity: 0; }
+
+.home-foot {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  gap: 1rem;
+  border-top: 1px solid var(--rule);
+  padding-top: 1.25rem;
 }
 
-.vf-words a:hover, .vf-words a:focus-visible { color: var(--text); outline: none; }
-.vf-words a:hover::after, .vf-words a:focus-visible::after { transform: scaleX(1); }
+.home-foot .holiday-note { margin: 0; padding: 0; border: 0; }
 
-/* Leaving: the words go, the frame opens to full width, then dissolves */
-.viewfinder.leaving .vf-words { opacity: 0; transition: opacity 0.4s ease; }
-.viewfinder.leaving .vf-frame { max-width: 100%; }
-.viewfinder.gone .vf-frame { opacity: 0; }
+.home-feature {
+  font-size: 0.85rem;
+  color: var(--text-faint);
+  text-decoration: none;
+  white-space: nowrap;
+  transition: color 0.5s ease;
+}
+.home-feature:hover { color: var(--text); }
+.home-feature[hidden] { display: none; }
 
-.home-section .holiday-note { margin-top: 3.5rem; }
+@media (max-width: 600px) {
+  .home-words { flex-direction: column; gap: 1.6rem; }
+  .home-foot { flex-direction: column; }
+}
 
-@media (max-width: 720px) {
-  .vf-frame { aspect-ratio: 16 / 9; }
-  .vf-words { gap: 0.5rem 1.75rem; margin-top: 1.5rem; }
+/* The word in flight between pages */
+.glide-word, .glide-ghost {
+  position: fixed;
+  z-index: 300;
+  margin: 0;
+  pointer-events: none;
+  transform-origin: 0 0;
 }
 
 /* ---- CATEGORY PAGES ---- */
@@ -1145,6 +1149,21 @@ body.weaving #main { opacity: 0; transition: opacity 1.2s ease; }
 }
 
 .cat-head .section-title { margin-bottom: 0; }
+
+/* Category titles keep the homepage word's shape (sentence case, tight), just larger */
+.cat-title {
+  text-transform: none;
+  letter-spacing: -0.02em;
+  font-size: clamp(2.75rem, 6vw, 5.25rem);
+}
+
+/* Arriving from the homepage: the switcher and films fade up under the gliding title */
+.work-section .cat-switch,
+.work-section .video-grid {
+  transition: opacity 0.6s cubic-bezier(0.22, 0.61, 0.36, 1), transform 0.7s cubic-bezier(0.22, 0.61, 0.36, 1);
+}
+.work-section.arriving .cat-switch,
+.work-section.arriving .video-grid { opacity: 0; transform: translateY(10px); transition: none; }
 
 .cat-switch { display: flex; gap: 1.6rem; }
 

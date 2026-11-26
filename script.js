@@ -12,7 +12,7 @@ function sinkholeVisible() {
 }
 
 // The three ways into the work
-const CATS = [['commercial', 'Commercial'], ['narrative', 'Narrative'], ['documentary', 'Documentary']];
+const CATS = [['narrative', 'Narrative'], ['commercial', 'Commercial'], ['documentary', 'Documentary']];
 
 function validSections() {
   const base = ['home', 'commercial', 'narrative', 'documentary', 'about', 'spring', 'creeker'];
@@ -198,7 +198,7 @@ function showSection(section) {
 function renderSection(section) {
   if (!siteData) return;
   ({
-    home:        () => { renderViewfinder(); renderHolidayNote(); },
+    home:        () => { renderHome(); renderHolidayNote(); },
     commercial:  () => renderCategory('commercial'),
     narrative:   () => renderCategory('narrative'),
     documentary: () => renderCategory('documentary'),
@@ -261,101 +261,79 @@ function renderVideoGrid(containerId, videos) {
 
 // ---- CATEGORY PAGES ----
 
+let pendingGlide = null;   // set by a homepage click: the word that will become this page's title
+
 function renderCategory(key) {
   const sec = document.getElementById('sec-' + key);
   if (!sec) return;
   const label = (CATS.find(([k]) => k === key) || [key, key])[1];
   sec.querySelector('.cat-head').innerHTML = `
-    <h1 class="section-title">${escHtml(label)}</h1>
+    <h1 class="section-title cat-title">${escHtml(label)}</h1>
     <nav class="cat-switch" aria-label="Categories">
       ${CATS.map(([k, l]) => `<a href="#${k}"${k === key ? ' class="on" aria-current="page"' : ''}>${l}</a>`).join('')}
     </nav>`;
   renderVideoGrid(key + '-grid', siteData[key] || []);
+  if (pendingGlide) glideInto(sec, pendingGlide);
+  pendingGlide = null;
 }
 
-// ---- HOME: THE VIEWFINDER ----
-// One wide 2.39 frame. It opens out of a single line, then dissolves between stills
-// from all the work (and, once each pass, Sinkhole). Hover a category and the frame
-// cuts to that category's footage; hover the frame and it holds. Click a word and
-// the frame opens out to full width and dissolves into the films.
+// The clicked word travels from the homepage to the top-left and grows into the
+// page title; the switcher and films fade up beneath it. About 0.85s in all.
+function glideInto(sec, g) {
+  const title = sec.querySelector('.cat-title');
+  sec.classList.add('arriving');
+  title.style.visibility = 'hidden';
+  requestAnimationFrame(() => {
+    const b = title.getBoundingClientRect();
+    const scale = g.fontSize / parseFloat(getComputedStyle(title).fontSize);
+    const ghost = title.cloneNode(true);
+    ghost.className = 'section-title cat-title glide-ghost';
+    ghost.style.cssText = `left:${b.left}px;top:${b.top}px;`;
+    document.body.appendChild(ghost);
+    g.word.remove();
+    ghost.animate([
+      { transform: `translate(${g.rect.left - b.left}px, ${g.rect.top - b.top}px) scale(${scale})` },
+      { transform: 'none' },
+    ], { duration: 700, easing: 'cubic-bezier(0.65, 0, 0.25, 1)', fill: 'forwards' });
+    setTimeout(() => sec.classList.remove('arriving'), 330);
+    setTimeout(() => { title.style.visibility = ''; ghost.remove(); }, 710);
+  });
+}
 
-let vfTimer = 0;
-function renderViewfinder() {
-  const el = document.getElementById('viewfinder');
+// ---- HOME ----
+// Just the three words, one line, centred. A hairline draws under the one you
+// point at. Click: the other two fade and the chosen word becomes the page title.
+
+function renderHome() {
+  const el = document.getElementById('home-words');
   if (!el) return;
-  clearInterval(vfTimer);
-
   const cats = CATS.filter(([k]) => (siteData[k] || []).length);
-  const slides = [];
-  cats.forEach(([k]) => siteData[k].forEach((v) => slides.push({ v, cat: k })));
-  if (sinkholeVisible() && slides.length) slides.splice(Math.ceil(slides.length / 2), 0, { sink: true });
-  if (!slides.length) { el.innerHTML = '<p class="empty-state">Nothing here yet.</p>'; return; }
+  el.innerHTML = cats.map(([k, l]) => `<a href="#${k}" data-cat="${k}">${l}</a>`).join('');
+  const feat = document.getElementById('home-feature');
+  if (feat) feat.hidden = !sinkholeVisible();
 
-  el.innerHTML = `
-    <div class="vf-frame">
-      ${slides.map((s) => {
-        if (s.sink) return sinkholePortal('vf-slide');
-        const key = cardRegistry.push(s.v) - 1;
-        const thumb = getThumb(s.v);
-        const ytId = (thumb.includes('img.youtube.com') && s.v.youtube_id) ? esc(s.v.youtube_id) : '';
-        return `
-          <div class="vf-slide video-card" data-key="${key}" role="button" tabindex="-1" aria-label="Play ${escHtml(s.v.title)}">
-            <img class="video-thumb" src="${escHtml(thumb)}" alt="" loading="eager"
-                 onerror="this.src='${esc(getFallbackThumb(s.v))}';"
-                 ${ytId ? `onload="upgradeYoutubeThumb(this,'${ytId}')"` : ''}>
-            <div class="video-play" aria-hidden="true"></div>
-          </div>`;
-      }).join('')}
-    </div>
-    <nav class="vf-words" aria-label="Work">
-      ${cats.map(([k, l]) => `<a href="#${k}" data-cat="${k}">${l}</a>`).join('')}
-    </nav>`;
+  const words = [...el.querySelectorAll('a')];
+  words.forEach((a) => a.addEventListener('click', (e) => {
+    if (matchMedia('(prefers-reduced-motion: reduce)').matches || fading) return;
+    e.preventDefault();
+    if (el.classList.contains('leaving')) return;
+    el.classList.add('leaving');
+    a.classList.add('chosen');
+    // Lift the word out of the page so it survives the page change
+    const rect = a.getBoundingClientRect();
+    const fontSize = parseFloat(getComputedStyle(a).fontSize);
+    const word = a.cloneNode(true);
+    word.className = 'glide-word';
+    word.style.cssText = `left:${rect.left}px;top:${rect.top}px;font-size:${fontSize}px;`;
+    document.body.appendChild(word);
+    setTimeout(() => {
+      pendingGlide = { word, rect, fontSize };
+      location.hash = a.dataset.cat;
+    }, 160);
+  }));
 
-  const frame = el.querySelector('.vf-frame');
-  const nodes = [...frame.children];
-  const all = slides.map((_, i) => i);
-  const byCat = Object.fromEntries(cats.map(([k]) => [k, all.filter((i) => slides[i].cat === k)]));
-  let set = all;
-  let pos = Math.floor(Math.random() * slides.length);
-  if (slides[pos].sink) pos = (pos + 1) % slides.length;
-  let held = false;
-  const show = (i) => nodes.forEach((n, j) => {
-    n.classList.toggle('on', j === i);
-    n.setAttribute('tabindex', j === i ? '0' : '-1');
-  });
-  show(set[pos]);
-
-  const advance = () => {
-    if (held || currentSection !== 'home') return;
-    pos = (pos + 1) % set.length;
-    show(set[pos]);
-  };
-  vfTimer = setInterval(advance, 3200);
-
-  frame.addEventListener('mouseenter', () => { held = true; });
-  frame.addEventListener('mouseleave', () => { held = false; });
-
-  el.querySelectorAll('.vf-words a').forEach((a) => {
-    a.addEventListener('mouseenter', () => { set = byCat[a.dataset.cat]; pos = 0; show(set[0]); });
-    a.addEventListener('mouseleave', () => {
-      const cur = set[pos];
-      set = all; pos = Math.max(0, all.indexOf(cur));
-    });
-    a.addEventListener('click', (e) => {
-      if (matchMedia('(prefers-reduced-motion: reduce)').matches) return;
-      e.preventDefault();
-      if (el.classList.contains('leaving')) return;
-      clearInterval(vfTimer);
-      set = byCat[a.dataset.cat]; show(set[0]);
-      hideCursorLabel();
-      el.classList.add('leaving');                       // words fade, frame opens to full width
-      setTimeout(() => el.classList.add('gone'), 750);   // then the frame dissolves
-      setTimeout(() => { location.hash = a.dataset.cat; }, 1250);
-    });
-  });
-
-  // Land: the frame opens out of a hairline, then the words come up
-  el.classList.remove('open', 'leaving', 'gone');
+  // Land: the words fade up together, a beat apart
+  el.classList.remove('open', 'leaving');
   requestAnimationFrame(() => requestAnimationFrame(() => el.classList.add('open')));
 }
 
@@ -383,7 +361,7 @@ function initPortals() {
   const state = new WeakMap();
   const still = matchMedia('(prefers-reduced-motion: reduce)').matches;
 
-  // offsetWidth/Height ignore CSS transforms (the viewfinder opens from a squashed line)
+  // offsetWidth/Height ignore CSS transforms
   const box = (cv) => ({ width: cv.offsetWidth, height: cv.offsetHeight });
   function setup(cv) {
     const r = box(cv);
