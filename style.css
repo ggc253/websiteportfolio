@@ -221,7 +221,7 @@ body.modal-open #creek { opacity: 0; }
   display: block;
   /* Gently toned toward the page: a touch less saturated, slightly warmer and dimmer */
   filter: saturate(0.86) sepia(0.07) brightness(0.93);
-  transition: filter 0.5s ease;
+  transition: filter 1.1s cubic-bezier(0.22, 0.61, 0.36, 1);
 }
 
 /* Soft edges: each frame's border melts into the page color, like a projected image */
@@ -240,10 +240,11 @@ body.modal-open #creek { opacity: 0; }
 .video-card:hover::after { opacity: 0.3; }
 .video-play { z-index: 2; }
 
-/* Hovering one frame quietly dims the others — attention, not decoration */
+/* Hovering one frame slowly fades the others down — attention, not decoration.
+   Only while a frame is actually under the cursor (crossing a gap doesn't dim everything). */
 @media (hover: hover) {
-  .video-grid:hover .video-thumb { filter: brightness(0.45) saturate(0.8); }
-  .video-grid .video-card:hover .video-thumb { filter: none; }
+  .video-grid:has(.video-card:hover) .video-thumb { filter: brightness(0.45) saturate(0.8); }
+  .video-grid .video-card:hover .video-thumb { filter: none; transition-duration: 0.7s; }
 }
 
 .video-play {
@@ -947,22 +948,50 @@ body.spring-mode .video-card { background: var(--surface); }
   text-underline-offset: 4px;
 }
 
-/* Creeker Day title: cuts between typefaces; a fixed-height line so nothing below jumps */
-.creeker-section { --cr-base: clamp(48px, 7vw, 96px); }
-
-.cr-title {
-  height: calc(var(--cr-base) * 1.4);           /* constant, whatever the face */
-  display: flex;
-  align-items: center;
-  white-space: nowrap;
-  letter-spacing: 0.02em;
+/* Creeker Day colours: picnic denim — washed-out blue, cream, a sun-faded red */
+body.creeker-mode {
+  --bg:        #2e3745;
+  --surface:   #38414f;
+  --text:      #f0eadb;
+  --text-dim:  rgba(240, 234, 219, 0.64);
+  --text-faint:rgba(240, 234, 219, 0.36);
+  --accent:    #c4644f;
+  --rule:      rgba(240, 234, 219, 0.12);
 }
 
-.cr-title { font-size: var(--cr-base); line-height: 1; }
-.cr-hint { line-height: 1; }
+body, .nav, .ticker-wrap { transition: background-color 1.2s ease, color 1.2s ease; }
+
+/* Creeker Day title: a window onto every year's footage */
+.cr-title {
+  position: relative;
+  display: inline-block;
+  font-size: clamp(3.6rem, 12vw, 10.5rem);
+  font-weight: 800;
+  letter-spacing: -0.02em;
+  line-height: 0.92;
+  white-space: nowrap;
+}
+
+.cr-t { display: block; }
+.cr-t2 { position: absolute; inset: 0; opacity: 0; }
+
+.cr-title.footage .cr-t {
+  background-color: var(--text);              /* shows while a still is loading */
+  background-size: cover;
+  background-position: center 40%;
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+  -webkit-text-stroke: 1px rgba(240, 234, 219, 0.22);   /* keeps dark footage legible */
+  filter: brightness(1.4) saturate(0.85);
+}
+
+.cr-title.footage .cr-t2 { transition: opacity 1.8s cubic-bezier(0.45, 0, 0.25, 1); }
+
+.cr-count { color: var(--text-dim); }
 
 .cr-observed {
-  margin-top: -1.5rem;
+  margin-top: -1.25rem;
   font-size: 1.05rem;
 }
 
@@ -1007,6 +1036,137 @@ body.sink-mode .story-thread { display: none; }
 /* Weaving into Creeker Day */
 body.weaving #main { opacity: 0; transition: opacity 1.2s ease; }
 .section.creeker-section { transition: opacity 1.8s ease 0.2s; }
+
+/* ---- HOME: THE VIEWFINDER ---- */
+
+.visually-hidden {
+  position: absolute; width: 1px; height: 1px; overflow: hidden;
+  clip: rect(0 0 0 0); white-space: nowrap;
+}
+
+.home-section { padding-top: 3rem; }
+
+.viewfinder {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  /* as wide as possible while the frame, the words and some air fit on one screen */
+  --vf-w: min(100%, calc((100vh - var(--work-top) - 14rem) * 2.39));
+}
+
+.vf-frame {
+  position: relative;
+  width: 100%;
+  max-width: var(--vf-w);
+  aspect-ratio: 2.39 / 1;
+  overflow: hidden;
+  background: #11120f;
+  transform: scaleY(0.004);
+  transition: transform 1.3s cubic-bezier(0.7, 0, 0.2, 1),
+              max-width 1s cubic-bezier(0.7, 0, 0.2, 1),
+              opacity 0.6s ease;
+}
+
+.viewfinder.open .vf-frame { transform: none; }
+
+/* Stills stack in the frame and dissolve between each other */
+.vf-frame > .vf-slide {
+  position: absolute;
+  inset: 0;
+  aspect-ratio: auto;
+  margin: 0;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 1.2s cubic-bezier(0.45, 0, 0.25, 1);
+}
+
+.vf-frame > .vf-slide.on { opacity: 1; pointer-events: auto; }
+.vf-frame .vf-slide .video-thumb { filter: saturate(0.86) sepia(0.07) brightness(0.93); }
+.vf-frame .vf-slide:hover .video-thumb { filter: none; }
+.vf-frame .sk-portal .portal-title { width: min(30%, 320px); }
+
+.vf-words {
+  display: flex;
+  justify-content: center;
+  flex-wrap: wrap;
+  gap: 0.5rem 3rem;
+  margin-top: 2.25rem;
+  opacity: 0;
+  transition: opacity 0.9s ease 0.9s;
+}
+
+.viewfinder.open .vf-words { opacity: 1; }
+
+.vf-words a {
+  position: relative;
+  font-size: clamp(1.05rem, 1.6vw, 1.3rem);
+  font-weight: 700;
+  color: var(--text-dim);
+  text-decoration: none;
+  padding-bottom: 0.4rem;
+  transition: color 0.4s ease;
+}
+
+.vf-words a::after {
+  content: '';
+  position: absolute;
+  left: 0; right: 0; bottom: 0;
+  height: 1px;
+  background: var(--text);
+  transform: scaleX(0);
+  transform-origin: left;
+  transition: transform 0.5s cubic-bezier(0.7, 0, 0.2, 1);
+}
+
+.vf-words a:hover, .vf-words a:focus-visible { color: var(--text); outline: none; }
+.vf-words a:hover::after, .vf-words a:focus-visible::after { transform: scaleX(1); }
+
+/* Leaving: the words go, the frame opens to full width, then dissolves */
+.viewfinder.leaving .vf-words { opacity: 0; transition: opacity 0.4s ease; }
+.viewfinder.leaving .vf-frame { max-width: 100%; }
+.viewfinder.gone .vf-frame { opacity: 0; }
+
+.home-section .holiday-note { margin-top: 3.5rem; }
+
+@media (max-width: 720px) {
+  .vf-frame { aspect-ratio: 16 / 9; }
+  .vf-words { gap: 0.5rem 1.75rem; margin-top: 1.5rem; }
+}
+
+/* ---- CATEGORY PAGES ---- */
+
+.cat-head {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 1rem 2rem;
+  margin-bottom: 2.75rem;
+}
+
+.cat-head .section-title { margin-bottom: 0; }
+
+.cat-switch { display: flex; gap: 1.6rem; }
+
+.cat-switch a {
+  font-size: 0.95rem;
+  color: var(--text-faint);
+  text-decoration: none;
+  transition: color 0.4s ease;
+}
+
+.cat-switch a:hover { color: var(--text); }
+.cat-switch a.on { color: var(--text); }
+
+/* Sinkhole in the Narrative grid: one frame among the others, not a banner */
+.sk-portal.sk-tile {
+  grid-column: auto;
+  aspect-ratio: 16 / 9;
+  margin: 0;
+}
+
+.sk-tile .portal-title { width: min(44%, 260px); }
+.sk-tile .portal-status { font-size: 0.78rem; }
 
 /* ---- RESPONSIVE ---- */
 

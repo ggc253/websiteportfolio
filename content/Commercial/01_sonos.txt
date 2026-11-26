@@ -1,0 +1,6 @@
+title: Sonos
+youtube_id: jqEi_6IwNn8
+category: Spec Commercial
+client: 
+year: 2025
+description: 

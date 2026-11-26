@@ -12,14 +12,13 @@ After running:
 FOLDER STRUCTURE
 ----------------
   content/
-    Featured/          ← videos shown on the homepage (any number)
-      01_best-work.txt
-      02_second-best.txt
-      03_third.txt
-    Edit/              ← All your editing work
+    Commercial/        ← the three categories the homepage opens on
       01_project.txt
-    Directing/         ← All your directing work
+    Narrative/
       01_film.txt
+    Documentary/
+      01_doc.txt
+    (Featured/, Edit/, Directing/ are the old pages — no longer shown)
     Photos/            ← Drop .jpg / .png files here
       01_title.jpg
       01_title.txt     ← optional metadata for the photo
@@ -76,7 +75,9 @@ def copy_custom_thumbnails() -> None:
     Edit/Directing) into thumbs/ so they can be served and referenced via a
     `thumbnail: thumbs/filename.png` line in the matching .txt file."""
     copied = []
-    for folder in (CONTENT_DIR / "Featured", CONTENT_DIR / "Edit", CONTENT_DIR / "Directing", CONTENT_DIR / "Sinkhole", CONTENT_DIR / "Spring", CONTENT_DIR / "Creeker"):
+    for folder in (CONTENT_DIR / "Commercial", CONTENT_DIR / "Narrative", CONTENT_DIR / "Documentary",
+                   CONTENT_DIR / "Featured", CONTENT_DIR / "Edit", CONTENT_DIR / "Directing",
+                   CONTENT_DIR / "Sinkhole", CONTENT_DIR / "Spring", CONTENT_DIR / "Creeker"):
         if not folder.exists():
             continue
         images = []
@@ -272,7 +273,15 @@ def main():
 
     copy_custom_thumbnails()
 
-    print("\nFeatured (Homepage):")
+    # The three categories the homepage opens on
+    for key, folder in (("commercial", "Commercial"), ("narrative", "Narrative"), ("documentary", "Documentary")):
+        print(f"\n{folder}:")
+        output[key] = process_video_folder(CONTENT_DIR / folder, folder)
+        if not output[key]:
+            print("  (no entries yet)")
+
+    # Older folders (no longer shown on the site; kept until you delete them)
+    print("\nFeatured (old homepage — not shown):")
     output["featured"] = process_video_folder(CONTENT_DIR / "Featured", "Featured")
     if not output["featured"]:
         print("  (no entries yet)")
@@ -325,10 +334,9 @@ def main():
     print()
     print("=" * 54)
     print(f"  ✅  data.json generated!")
-    print(f"      Featured:  {len(output['featured'])} video(s)")
-    print(f"      Edit:      {len(output['edit'])} project(s)")
-    print(f"      Directing: {len(output['directing'])} project(s)")
-    print(f"      Photos:    {len(output['photos'])} photo(s)")
+    print(f"      Commercial:  {len(output['commercial'])} video(s)")
+    print(f"      Narrative:   {len(output['narrative'])} video(s)")
+    print(f"      Documentary: {len(output['documentary'])} video(s)")
     print()
     print("  To publish:")
     print("  git add -A && git commit -m 'Update content' && git push")

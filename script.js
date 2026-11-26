@@ -11,8 +11,11 @@ function sinkholeVisible() {
   return !!(s && s.title && (String(s.published).toLowerCase() === 'yes' || PREVIEW));
 }
 
+// The three ways into the work
+const CATS = [['commercial', 'Commercial'], ['narrative', 'Narrative'], ['documentary', 'Documentary']];
+
 function validSections() {
-  const base = ['home', 'directing', 'edit', 'about', 'spring', 'creeker'];
+  const base = ['home', 'commercial', 'narrative', 'documentary', 'about', 'spring', 'creeker'];
   return sinkholeVisible() ? base.concat('sinkhole') : base;
 }
 
@@ -24,7 +27,7 @@ async function init() {
     siteData = await res.json();
   } catch (err) {
     console.warn('Could not load data.json:', err);
-    siteData = { featured: [], edit: [], directing: [], about: {}, sinkhole: {} };
+    siteData = { commercial: [], narrative: [], documentary: [], about: {}, sinkhole: {} };
   }
 
   document.querySelector('.nav-link-feature').hidden = true;   // reached through the portal in the grid
@@ -163,6 +166,7 @@ function weaveInto(swap) {
 function showSection(section) {
   currentSection = section;
   document.body.classList.toggle('sink-mode', section === 'sinkhole');
+  document.body.classList.toggle('creeker-mode', section === 'creeker');
 
   const noTicker = section === 'about' || section === 'sinkhole' || section === 'spring';
   document.body.classList.toggle('spring-mode', section === 'spring');
@@ -194,9 +198,10 @@ function showSection(section) {
 function renderSection(section) {
   if (!siteData) return;
   ({
-    home:      () => { renderVideoGrid('home-grid', siteData.featured || []); renderHolidayNote(); },
-    directing: () => renderVideoGrid('directing-grid', siteData.directing || []),
-    edit:      () => renderVideoGrid('edit-grid',      siteData.edit      || []),
+    home:        () => { renderViewfinder(); renderHolidayNote(); },
+    commercial:  () => renderCategory('commercial'),
+    narrative:   () => renderCategory('narrative'),
+    documentary: () => renderCategory('documentary'),
     sinkhole:  () => renderSinkhole(siteData.sinkhole || {}),
     spring:    () => renderSpring(siteData.spring || {}),
     creeker:   () => renderCreeker(siteData.creeker || {}),
@@ -224,9 +229,10 @@ function renderVideoGrid(containerId, videos) {
     return;
   }
 
-  const portal = (containerId === 'home-grid' || containerId === 'directing-grid') ? sinkholePortal() : '';
+  // Sinkhole sits quietly at the end of Narrative, the same size as everything else
+  const portal = containerId === 'narrative-grid' ? sinkholePortal('sk-tile') : '';
 
-  container.innerHTML = portal + videos.map((v) => {
+  container.innerHTML = videos.map((v) => {
     const key = cardRegistry.push(v) - 1;
     const thumb = getThumb(v);
     const ytId = (thumb.includes('img.youtube.com') && v.youtube_id) ? esc(v.youtube_id) : '';
@@ -250,25 +256,125 @@ function renderVideoGrid(containerId, videos) {
           ${meta ? `<div class="cc-meta">${escHtml(meta)}</div>` : ''}
         </div>
       </div>`;
-  }).join('');
+  }).join('') + portal;
+}
+
+// ---- CATEGORY PAGES ----
+
+function renderCategory(key) {
+  const sec = document.getElementById('sec-' + key);
+  if (!sec) return;
+  const label = (CATS.find(([k]) => k === key) || [key, key])[1];
+  sec.querySelector('.cat-head').innerHTML = `
+    <h1 class="section-title">${escHtml(label)}</h1>
+    <nav class="cat-switch" aria-label="Categories">
+      ${CATS.map(([k, l]) => `<a href="#${k}"${k === key ? ' class="on" aria-current="page"' : ''}>${l}</a>`).join('')}
+    </nav>`;
+  renderVideoGrid(key + '-grid', siteData[key] || []);
+}
+
+// ---- HOME: THE VIEWFINDER ----
+// One wide 2.39 frame. It opens out of a single line, then dissolves between stills
+// from all the work (and, once each pass, Sinkhole). Hover a category and the frame
+// cuts to that category's footage; hover the frame and it holds. Click a word and
+// the frame opens out to full width and dissolves into the films.
+
+let vfTimer = 0;
+function renderViewfinder() {
+  const el = document.getElementById('viewfinder');
+  if (!el) return;
+  clearInterval(vfTimer);
+
+  const cats = CATS.filter(([k]) => (siteData[k] || []).length);
+  const slides = [];
+  cats.forEach(([k]) => siteData[k].forEach((v) => slides.push({ v, cat: k })));
+  if (sinkholeVisible() && slides.length) slides.splice(Math.ceil(slides.length / 2), 0, { sink: true });
+  if (!slides.length) { el.innerHTML = '<p class="empty-state">Nothing here yet.</p>'; return; }
+
+  el.innerHTML = `
+    <div class="vf-frame">
+      ${slides.map((s) => {
+        if (s.sink) return sinkholePortal('vf-slide');
+        const key = cardRegistry.push(s.v) - 1;
+        const thumb = getThumb(s.v);
+        const ytId = (thumb.includes('img.youtube.com') && s.v.youtube_id) ? esc(s.v.youtube_id) : '';
+        return `
+          <div class="vf-slide video-card" data-key="${key}" role="button" tabindex="-1" aria-label="Play ${escHtml(s.v.title)}">
+            <img class="video-thumb" src="${escHtml(thumb)}" alt="" loading="eager"
+                 onerror="this.src='${esc(getFallbackThumb(s.v))}';"
+                 ${ytId ? `onload="upgradeYoutubeThumb(this,'${ytId}')"` : ''}>
+            <div class="video-play" aria-hidden="true"></div>
+          </div>`;
+      }).join('')}
+    </div>
+    <nav class="vf-words" aria-label="Work">
+      ${cats.map(([k, l]) => `<a href="#${k}" data-cat="${k}">${l}</a>`).join('')}
+    </nav>`;
+
+  const frame = el.querySelector('.vf-frame');
+  const nodes = [...frame.children];
+  const all = slides.map((_, i) => i);
+  const byCat = Object.fromEntries(cats.map(([k]) => [k, all.filter((i) => slides[i].cat === k)]));
+  let set = all;
+  let pos = Math.floor(Math.random() * slides.length);
+  if (slides[pos].sink) pos = (pos + 1) % slides.length;
+  let held = false;
+  const show = (i) => nodes.forEach((n, j) => {
+    n.classList.toggle('on', j === i);
+    n.setAttribute('tabindex', j === i ? '0' : '-1');
+  });
+  show(set[pos]);
+
+  const advance = () => {
+    if (held || currentSection !== 'home') return;
+    pos = (pos + 1) % set.length;
+    show(set[pos]);
+  };
+  vfTimer = setInterval(advance, 3200);
+
+  frame.addEventListener('mouseenter', () => { held = true; });
+  frame.addEventListener('mouseleave', () => { held = false; });
+
+  el.querySelectorAll('.vf-words a').forEach((a) => {
+    a.addEventListener('mouseenter', () => { set = byCat[a.dataset.cat]; pos = 0; show(set[0]); });
+    a.addEventListener('mouseleave', () => {
+      const cur = set[pos];
+      set = all; pos = Math.max(0, all.indexOf(cur));
+    });
+    a.addEventListener('click', (e) => {
+      if (matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+      e.preventDefault();
+      if (el.classList.contains('leaving')) return;
+      clearInterval(vfTimer);
+      set = byCat[a.dataset.cat]; show(set[0]);
+      hideCursorLabel();
+      el.classList.add('leaving');                       // words fade, frame opens to full width
+      setTimeout(() => el.classList.add('gone'), 750);   // then the frame dissolves
+      setTimeout(() => { location.hash = a.dataset.cat; }, 1250);
+    });
+  });
+
+  // Land: the frame opens out of a hairline, then the words come up
+  el.classList.remove('open', 'leaving', 'gone');
+  requestAnimationFrame(() => requestAnimationFrame(() => el.classList.add('open')));
 }
 
 // ---- SINKHOLE PORTAL ----
-// A hole in the grid: a wide dark frame where rings swell out of the dark,
-// with the Sinkhole title floating over it. Click to sink in.
+// A small hole in the work: dark, rings swelling out of it, the Sinkhole title
+// floating over it, labelled simply "Feature film". Click to sink in.
 
-function sinkholePortal() {
+function sinkholePortal(extraClass = '') {
   if (!sinkholeVisible()) return '';
   const s = siteData.sinkhole || {};
   const title = s.title_image
     ? `<div class="sk-title-wrap portal-title" style="--title-img:url('${esc(s.title_image)}')"><img class="sk-title-img" src="${escHtml(s.title_image)}" alt="${escHtml(s.title || 'Sinkhole')}"></div>`
     : `<div class="portal-title-text">${escHtml(s.title || 'Sinkhole')}</div>`;
   return `
-    <a class="sk-portal" href="#sinkhole" aria-label="${escHtml(s.title || 'Sinkhole')}, ${escHtml(s.status || 'feature film')}">
+    <a class="sk-portal ${extraClass}" href="#sinkhole" aria-label="${escHtml(s.title || 'Sinkhole')}, feature film">
       <canvas class="portal-rings" aria-hidden="true"></canvas>
       <div class="portal-inner">
         ${title}
-        ${s.status ? `<span class="portal-status">${escHtml(s.status)}</span>` : ''}
+        <span class="portal-status">Feature film</span>
       </div>
     </a>`;
 }
@@ -277,8 +383,10 @@ function initPortals() {
   const state = new WeakMap();
   const still = matchMedia('(prefers-reduced-motion: reduce)').matches;
 
+  // offsetWidth/Height ignore CSS transforms (the viewfinder opens from a squashed line)
+  const box = (cv) => ({ width: cv.offsetWidth, height: cv.offsetHeight });
   function setup(cv) {
-    const r = cv.getBoundingClientRect();
+    const r = box(cv);
     const dpr = Math.min(window.devicePixelRatio || 1, 2);
     cv.width = r.width * dpr; cv.height = r.height * dpr;
     const ctx = cv.getContext('2d');
@@ -298,8 +406,8 @@ function initPortals() {
 
   function draw(cv, t) {
     let st = state.get(cv);
-    const r = cv.getBoundingClientRect();
-    if (!st || Math.abs(st.w - r.width) > 1) st = setup(cv);
+    const r = box(cv);
+    if (!st || Math.abs(st.w - r.width) > 1 || Math.abs(st.h - r.height) > 1) st = setup(cv);
     const { ctx, w, h, maxR, grow } = st;
     const hovering = cv.parentElement.matches(':hover');
     st.pull += ((hovering ? 1 : 0) - st.pull) * 0.04;
@@ -383,13 +491,6 @@ function initCursorLabel() {
     const v = cardRegistry[+card.dataset.key];
     const clt = document.getElementById('cl-title');
     clt.textContent = v.title || '';
-    if (currentSection === 'creeker') {
-      const f = randomFont(CREEKER_FONTS[0]);
-      clt.style.fontFamily = f.f; clt.style.fontWeight = f.w; clt.style.fontStyle = f.i ? 'italic' : 'normal';
-      clt.style.fontSize = '1.15rem';
-    } else {
-      clt.style.fontFamily = clt.style.fontWeight = clt.style.fontStyle = clt.style.fontSize = '';
-    }
     document.getElementById('cl-meta').textContent  = metaLine(v);
     document.getElementById('cl-desc').textContent  = v.description || '';
     if (!label.on) { label.x = label.tx; label.y = label.ty; }
@@ -478,109 +579,28 @@ function renderSinkhole(s) {
     ${trailer}`;
 }
 
-// ---- CREEKER DAY TYPE ----
-// Every Creeker Day is many people's footage, many kinds of day. The title cuts
-// rapidly between ~60 typefaces, each fitted to the same width so the cuts land
-// like title cards. Fonts load only when needed.
-
-// [Google family name, weight, italic, uppercase]
-const CREEKER_FACES = [
-  ['Abril Fatface', 400, 0, 1], ['Alfa Slab One', 400, 0, 1], ['Anton', 400, 0, 1], ['Archivo Black', 400, 0, 1],
-  ['Bebas Neue', 400, 0, 1], ['Black Ops One', 400, 0, 1], ['Bodoni Moda', 700, 0, 1], ['Bungee', 400, 0, 1],
-  ['Bungee Shade', 400, 0, 1], ['Caveat', 700, 0, 0], ['Cinzel', 700, 0, 1], ['Cormorant Garamond', 600, 1, 0],
-  ['Courier Prime', 700, 0, 1], ['Creepster', 400, 0, 1], ['DM Serif Display', 400, 1, 0], ['Fascinate', 400, 0, 1],
-  ['Fraunces', 900, 0, 0], ['Fredoka', 700, 0, 0], ['Gloria Hallelujah', 400, 0, 0], ['Homemade Apple', 400, 0, 0],
-  ['IBM Plex Mono', 600, 0, 1], ['Indie Flower', 400, 0, 0], ['Instrument Serif', 400, 0, 0], ['Josefin Sans', 700, 0, 1],
-  ['Kalam', 700, 0, 0], ['Libre Baskerville', 700, 1, 0], ['Limelight', 400, 0, 1], ['Lobster', 400, 0, 0],
-  ['Major Mono Display', 400, 0, 0], ['Monoton', 400, 0, 1], ['Nosifer', 400, 0, 1], ['Orbitron', 800, 0, 1],
-  ['Oswald', 700, 0, 1], ['Pacifico', 400, 0, 0], ['Permanent Marker', 400, 0, 1], ['Playfair Display', 400, 1, 0],
-  ['Poiret One', 400, 0, 1], ['Press Start 2P', 400, 0, 1], ['Righteous', 400, 0, 1], ['Rubik Mono One', 400, 0, 1],
-  ['Rye', 400, 0, 1], ['Sancreek', 400, 0, 1], ['Satisfy', 400, 0, 0], ['Shadows Into Light', 400, 0, 0],
-  ['Shrikhand', 400, 0, 0], ['Silkscreen', 400, 0, 1], ['Six Caps', 400, 0, 1], ['Space Mono', 700, 0, 1],
-  ['Special Elite', 400, 0, 1], ['Staatliches', 400, 0, 1], ['Syne', 800, 0, 1], ['Ultra', 400, 0, 1],
-  ['UnifrakturMaguntia', 400, 0, 0], ['Unbounded', 800, 0, 1], ['VT323', 400, 0, 1], ['Yeseva One', 400, 0, 0],
-  ['Zilla Slab', 700, 1, 0], ['Libre Barcode 39 Text', 400, 0, 1], ['Bagel Fat One', 400, 0, 0], ['Eater', 400, 0, 1],
-];
-
-const CREEKER_FONTS = [{ n: null, f: "'Helvetica Neue', Helvetica, Arial, sans-serif", w: 700, i: false, up: true }]
-  .concat(CREEKER_FACES.map(([n, w, i, up]) => ({ n, f: `'${n}'`, w, i: !!i, up: !!up })));
-
-let creekerFontsLoaded = false;
-function ensureCreekerFonts() {
-  if (creekerFontsLoaded) return;
-  creekerFontsLoaded = true;
-  const fams = CREEKER_FACES.map(([n, w, i]) => {
-    const name = n.replace(/ /g, '+');
-    if (i) return `family=${name}:ital,wght@1,${w}`;
-    if (w !== 400) return `family=${name}:wght@${w}`;
-    return `family=${name}`;
-  }).join('&');
-  const link = document.createElement('link');
-  link.rel = 'stylesheet';
-  link.href = `https://fonts.googleapis.com/css2?${fams}&display=swap`;
-  document.head.appendChild(link);
-}
-
-const randomFont = (not, pool = CREEKER_FONTS) => {
-  if (pool.length < 2) return pool[0];
-  let f;
-  do { f = pool[Math.floor(Math.random() * pool.length)]; } while (f === not);
-  return f;
-};
-
-// Fit a face to a fixed width (and a height ceiling) so every cut is the same size
-const measureCtx = document.createElement('canvas').getContext('2d');
-function fitScale(font, text) {
-  const t = font.up ? text.toUpperCase() : text;
-  measureCtx.font = `${font.i ? 'italic ' : ''}${font.w} 100px ${font.f}`;
-  const width = measureCtx.measureText(t).width || 1;
-  return width;                       // width at 100px
-}
+// ---- CREEKER DAY TITLE ----
+// The title is a window: through the letters, stills from every year's film
+// dissolve one into the next. Many people's days, one title.
 
 let creekerCycle = 0;
-function startCreekerTitle() {
-  clearTimeout(creekerCycle);
+function startCreekerTitle(stills) {
+  clearInterval(creekerCycle);
   const el = document.getElementById('cr-title');
-  if (!el) return;
-  const text = el.textContent;
-  const ready = [CREEKER_FONTS[0]];
-  const widths = new Map([[CREEKER_FONTS[0], fitScale(CREEKER_FONTS[0], text)]]);
-
-  // Only cut to faces that have actually loaded (no flashes of fallback type)
-  if (document.fonts && document.fonts.load) {
-    CREEKER_FONTS.slice(1).forEach((font) => {
-      const spec = `${font.i ? 'italic ' : ''}${font.w} 100px ${font.f}`;
-      document.fonts.load(spec, text).then(() => {
-        if (document.fonts.check(spec, text)) { widths.set(font, fitScale(font, text)); ready.push(font); }
-      }).catch(() => {});
-    });
-  }
-
-  const apply = (font) => {
-    const base = Math.min(96, Math.max(48, innerWidth * 0.07));          // same as --cr-base in CSS
-    const target = widths.get(CREEKER_FONTS[0]) * base / 100;          // Helvetica's width sets the box
-    let size = target / widths.get(font) * 100;
-    size = Math.min(size, base * 1.35);                                 // keep very condensed faces in the frame
-    el.style.fontFamily = font.f;
-    el.style.fontWeight = font.w;
-    el.style.fontStyle = font.i ? 'italic' : 'normal';
-    el.style.textTransform = font.up ? 'uppercase' : 'none';
-    el.style.fontSize = `${size.toFixed(1)}px`;
-  };
-  apply(CREEKER_FONTS[0]);
-  if (matchMedia('(prefers-reduced-motion: reduce)').matches) return;
-
-  let current = CREEKER_FONTS[0];
-  // One cut every half second
-  const CUT_MS = 500;
-  const tick = () => {
-    const t = document.getElementById('cr-title');
-    if (!t || currentSection !== 'creeker') return;
-    current = randomFont(current, ready);
-    apply(current);
-    creekerCycle = setTimeout(tick, CUT_MS);
-  };
-  creekerCycle = setTimeout(tick, CUT_MS);
+  if (!el || !stills.length) return;
+  const [a, b] = el.querySelectorAll('.cr-t');
+  const set = (n, i) => { n.style.backgroundImage = `url(${JSON.stringify(stills[i])})`; };
+  el.classList.add('footage');
+  let i = Math.floor(Math.random() * stills.length);
+  set(a, i);
+  if (stills.length < 2 || matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+  let top = false;                                   // is the upper layer (b) showing?
+  creekerCycle = setInterval(() => {
+    if (currentSection !== 'creeker') { clearInterval(creekerCycle); return; }
+    i = (i + 1) % stills.length;
+    if (top) { set(a, i); b.style.opacity = 0; } else { set(b, i); b.style.opacity = 1; }
+    top = !top;
+  }, 3000);
 }
 
 // ---- CREEKER DAY ----
@@ -606,11 +626,7 @@ function renderHolidayNote() {
   const el = document.getElementById('holiday-note');
   if (!el) return;
   const c = creekerDay();
-  ensureCreekerFonts();
-  const hint = randomFont(CREEKER_FONTS[0]);
-  const style = `font-family:${hint.f.replace(/"/g, "'")};font-weight:${hint.w};font-style:${hint.i ? 'italic' : 'normal'};`
-              + 'font-size:1.05em';
-  const link = `<a href="#creeker" class="cr-hint" style="${style}">Creeker Day</a>`;
+  const link = '<a href="#creeker">Creeker Day</a>';
   el.innerHTML = c.today
     ? `Today is ${link}.`
     : `The next ${link} is July 4, ${c.year}. ${c.days.toLocaleString()} ${c.days === 1 ? 'day' : 'days'} to go.`;
@@ -628,7 +644,7 @@ function renderCreeker(cd) {
     : `The ${ordinal(c.edition)} annual Creeker Day is in ${c.days.toLocaleString()} ${c.days === 1 ? 'day' : 'days'}.`;
 
   container.innerHTML = `
-    <h1 class="section-title cr-title" id="cr-title">${escHtml(cd.title || 'Creeker Day')}</h1>
+    <h1 class="section-title cr-title" id="cr-title"><span class="cr-t">${escHtml(cd.title || 'Creeker Day')}</span><span class="cr-t cr-t2" aria-hidden="true">${escHtml(cd.title || 'Creeker Day')}</span></h1>
     <p class="cr-observed">Observed every July 4th since ${since}.</p>
     <p class="cr-count">${count}</p>
     ${intro ? `<p class="cr-intro">${escHtml(intro)}</p>` : ''}
@@ -640,8 +656,7 @@ function renderCreeker(cd) {
     youtube_id: v.youtube_id,
     thumbnail: v.thumbnail,
   }));
-  ensureCreekerFonts();
-  startCreekerTitle();
+  startCreekerTitle(videos.map(getThumb).filter(Boolean));
   if (videos.length) renderVideoGrid('creeker-grid', videos);
   else document.getElementById('creeker-grid').innerHTML = '<p class="empty-state">The films are on their way.</p>';
 }

@@ -1,0 +1,7 @@
+title: Am I Crazy?
+youtube_id: XMexYGNz7p4
+thumbnail: thumbs/ctethumbnail.png
+category: Documentary Trailer
+client: 
+year: 2023
+description: 

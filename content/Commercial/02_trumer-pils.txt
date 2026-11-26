@@ -1,0 +1,7 @@
+title: Trumer Pils
+youtube_id: tiAn1cn9_Uk
+thumbnail: thumbs/trumerpilsthumbnail.png
+category: Commercial
+client: 
+year: 2024
+description: 
