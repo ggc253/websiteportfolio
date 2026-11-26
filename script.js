@@ -678,61 +678,6 @@ function renderSinkhole(s) {
   } else if (log) log.classList.add('surfaced');
 }
 
-// ---- CREEKER DAY TITLE ----
-// The title is a window: through the letters, stills from every year's film
-// dissolve one into the next. Many people's days, one title.
-
-let creekerCycle = 0;
-function startCreekerTitle(pool) {
-  clearInterval(creekerCycle);
-  const el = document.getElementById('cr-title');
-  if (!el || !pool.length) return;
-  const [a, b] = el.querySelectorAll('.cr-t');
-  const ok = new Map();                                // src -> loaded Image (only good ones get shown)
-  const load = (src) => new Promise((res) => {
-    if (ok.has(src)) return res(true);
-    const im = new Image();
-    im.onload = () => { const good = im.naturalWidth > 120; if (good) ok.set(src, im); res(good); };
-    im.onerror = () => res(false);
-    im.src = src;
-  });
-  const shuffle = (arr) => {
-    const out = arr.slice();
-    for (let k = out.length - 1; k > 0; k--) { const j = Math.floor(Math.random() * (k + 1)); [out[k], out[j]] = [out[j], out[k]]; }
-    return out;
-  };
-  // A shuffled deck: every still once before any repeats, then reshuffle
-  let deck = [], last = null;
-  const draw = () => {
-    if (!deck.length) { deck = shuffle(pool); if (deck[0] === last && deck.length > 1) deck.push(deck.shift()); }
-    return (last = deck.shift());
-  };
-  const paint = (n, src) => { n.style.backgroundImage = `url(${JSON.stringify(src)})`; };
-
-  el.classList.add('footage');
-  const first = draw();
-  paint(a, first);
-  if (pool.length < 2 || matchMedia('(prefers-reduced-motion: reduce)').matches) return;
-
-  let top = false;                                     // is the upper layer (b) showing?
-  let busy = false;
-  let next = draw();
-  load(next);
-  creekerCycle = setInterval(async () => {
-    if (currentSection !== 'creeker') { clearInterval(creekerCycle); return; }
-    if (busy) return;
-    busy = true;
-    // skip anything that hasn't loaded or doesn't exist
-    let tries = 0;
-    while (!(await load(next)) && tries++ < pool.length) next = draw();
-    if (top) { paint(a, next); b.style.opacity = 0; } else { paint(b, next); b.style.opacity = 1; }
-    top = !top;
-    next = draw();
-    load(next);                                        // preload the one after
-    busy = false;
-  }, 2600);
-}
-
 // ---- CREEKER DAY ----
 // Every July 4th since 2017. The holiday that replaced the Fourth of July.
 
@@ -771,8 +716,8 @@ function renderCreeker(cd) {
   const name = cd.title || 'Creeker Day';
 
   // The intro is a short poem: verses split by blank lines. "Creeker Day" in the
-  // last verse becomes the page title, which has every year's footage in its letters.
-  const titleHtml = `<h1 class="cr-title" id="cr-title"><span class="cr-t">${escHtml(name)}</span><span class="cr-t cr-t2" aria-hidden="true">${escHtml(name)}</span></h1>`;
+  // last verse becomes the page title: Fraunces, cream, with a faded-red offset like a print.
+  const titleHtml = `<h1 class="cr-title" id="cr-title">${escHtml(name)}</h1>`;
   const verses = String(cd.intro || '').split(/\n\s*\n/).map((v) => v.split('\n').map((l) => l.trim()).filter(Boolean)).filter((v) => v.length);
   let titled = false;
   const poem = verses.map((lines, vi) => {
@@ -824,11 +769,6 @@ function renderCreeker(cd) {
     thumbnail: v.thumbnail,
     frames: v.frames,
   }));
-  // Every still we have from every year: covers, YouTube's frames, and Graham's own
-  const stills = videos.flatMap((v) => [getThumb(v)].concat(
-    (v.frames && v.frames.length) ? v.frames
-      : v.youtube_id ? [1, 2, 3].map((n) => `https://i.ytimg.com/vi/${v.youtube_id}/hq${n}.jpg`) : []));
-  startCreekerTitle([...new Set(stills.filter(Boolean))]);
   if (videos.length) { renderVideoGrid('creeker-grid', videos); initFlipbooks(document.getElementById('creeker-grid')); }
   else document.getElementById('creeker-grid').innerHTML = '<p class="empty-state">The films are on their way.</p>';
 

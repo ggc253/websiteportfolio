@@ -1048,8 +1048,8 @@ body.creeker-mode {
 body, .nav, .ticker-wrap { transition: background-color 1.2s ease, color 1.2s ease; }
 
 /* Creeker Day: a short poem, centred like an intertitle. The verses arrive one
-   at a time; the last one lands on the title, which has every year's footage in
-   its letters, and a small firework goes up behind it. */
+   at a time; the last one lands on the title, and a small firework goes up
+   behind it. */
 .creeker-section { text-align: center; }
 
 .cr-poem {
@@ -1075,35 +1075,22 @@ body, .nav, .ticker-wrap { transition: background-color 1.2s ease, color 1.2s ea
   to   { opacity: 1; transform: none; }
 }
 
-/* The title: a window onto every year's footage */
+/* The title: Fraunces Black in cream, with a faded-red offset like a slightly
+   misregistered print (a parade poster, a picnic flyer) */
 .cr-title {
   position: relative;
   display: inline-block;
   margin-top: 0.35rem;
-  font-size: clamp(2.5rem, 5.2vw, 4rem);
-  font-weight: 800;
-  letter-spacing: -0.02em;
-  line-height: 1;
+  font-family: 'Fraunces', Georgia, serif;
+  font-weight: 900;
+  font-size: clamp(2.6rem, 5.4vw, 4.2rem);
+  letter-spacing: -0.01em;
+  line-height: 1.05;
   white-space: nowrap;
   color: var(--text);
+  text-shadow: 0.05em 0.05em 0 var(--accent);
   cursor: default;
 }
-
-.cr-t { display: block; }
-.cr-t2 { position: absolute; inset: 0; opacity: 0; }
-
-.cr-title.footage .cr-t {
-  background-color: var(--text);              /* shows while a still is loading */
-  background-size: cover;
-  background-position: center 40%;
-  -webkit-background-clip: text;
-  background-clip: text;
-  color: transparent;
-  -webkit-text-stroke: 0.6px rgba(240, 234, 219, 0.3);  /* keeps dark footage legible */
-  filter: brightness(1.45) saturate(0.85);
-}
-
-.cr-title.footage .cr-t2 { transition: opacity 1.8s cubic-bezier(0.45, 0, 0.25, 1); }
 
 /* The firework canvas: a generous box around the title, behind nothing */
 .cr-firework {
