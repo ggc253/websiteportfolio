@@ -234,6 +234,8 @@ def parse_year_lines(text: str) -> list:
         if len(parts) < 2 or not parts[0][:4].isdigit():
             continue
         t = {"year": int(parts[0][:4]), "youtube_id": youtube_id_from(parts[1])}
+        if "/shorts/" in parts[1]:
+            t["vertical"] = True          # a YouTube Short: plays in a tall frame
         if len(parts) > 2:
             t["thumbnail"] = parts[2]
         items.append(t)

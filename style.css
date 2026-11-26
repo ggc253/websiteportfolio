@@ -801,6 +801,14 @@ body.about-mode #exposure { opacity: 1; }
   aspect-ratio: 16 / 9;
 }
 
+/* YouTube Shorts: a tall frame that fits the screen height */
+.modal.vertical .modal-box {
+  width: auto;
+  height: 86vh;
+  max-width: 90vw;
+  aspect-ratio: 9 / 16;
+}
+
 .modal-close {
   position: absolute;
   top: -2.6rem;

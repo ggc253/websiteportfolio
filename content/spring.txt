@@ -10,3 +10,6 @@ release: 2047
 intro: One trailer a year, every year, until the film comes out.
   What it's about...TBD
 trailers:
+  2022 — https://youtu.be/VIvCEXI7z80
+  2023 — https://youtu.be/NwP_0mT5N1A
+  2024 — https://www.youtube.com/shorts/g3g08-98Wbs

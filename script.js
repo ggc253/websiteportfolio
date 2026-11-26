@@ -901,7 +901,7 @@ function renderSpring(sp) {
     }
     if (t) {
       const v = { title: sp.title || 'One Afternoon in Spring', category: 'Trailer', year: String(y),
-                  youtube_id: t.youtube_id, thumbnail: t.thumbnail };
+                  youtube_id: t.youtube_id, thumbnail: t.thumbnail, vertical: t.vertical };
       const key = cardRegistry.push(v) - 1;
       const thumb = getThumb(v);
       const ytId = (thumb.includes('img.youtube.com') && v.youtube_id) ? esc(v.youtube_id) : '';
@@ -1001,6 +1001,7 @@ function openVideo(v) {
             title="${escHtml(v.title)}"></iframe>`;
 
   hideCursorLabel();
+  document.getElementById('video-modal').classList.toggle('vertical', !!v.vertical);   // Shorts play tall
   document.getElementById('video-modal').classList.add('open');
   document.body.classList.add('modal-open');
   document.body.style.overflow = 'hidden';
