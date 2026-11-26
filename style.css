@@ -10,13 +10,14 @@
 }
 
 :root {
-  --bg:        #242320;                    /* Charcoal — warm, soft, not black */
-  --surface:   #2e2d29;
-  --text:      #eee9df;                    /* Cream */
-  --text-dim:  rgba(238, 233, 223, 0.62);
-  --text-faint:rgba(238, 233, 223, 0.36);
-  --accent:    #a3b5a0;                    /* Moss — used very sparingly */
-  --rule:      rgba(238, 233, 223, 0.1);
+  --bg:        #262922;                    /* Olive grove — muted green-gray */
+  --surface:   #30332b;
+  --text:      #eceadc;                    /* Cream */
+  --text-dim:  rgba(236, 234, 220, 0.62);
+  --text-faint:rgba(236, 234, 220, 0.36);
+  --accent:    #b9c49c;                    /* Sage — used very sparingly */
+  --rule:      rgba(236, 234, 220, 0.1);
+  --wisp-rgb:  168, 196, 208;              /* background wisps — river blue */
   --font:      'Helvetica Neue', Helvetica, Arial, sans-serif;
   --nav-h:     54px;
   --ticker-h:  38px;
@@ -322,85 +323,263 @@ body.modal-open #creek { opacity: 0; }
 }
 
 /* ---- SINKHOLE ---- */
+/* Very dark, earthy, folk-horror quiet. Rings drift inward toward a dark point. */
+
+body.sink-mode {
+  --bg:        #0b0907;
+  --surface:   #15110e;
+  --text:      #e9e1d3;                    /* bone */
+  --text-dim:  rgba(233, 225, 211, 0.55);
+  --text-faint:rgba(233, 225, 211, 0.3);
+  --rule:      rgba(233, 225, 211, 0.1);
+  --accent:    #8e4f34;                    /* rust */
+  background: var(--bg);
+  color: var(--text);
+}
+
+body.sink-mode #creek { opacity: 0; }
+
+#abyss {
+  position: fixed;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  z-index: 0;
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity 2.5s ease;
+}
+
+body.sink-mode #abyss { opacity: 1; }
+
+/* Darkness pooling at the center and the edges */
+#abyss-shade {
+  position: fixed;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity 2.5s ease;
+  background:
+    radial-gradient(ellipse 30% 26% at 50% 66%, rgba(0,0,0,0.7), rgba(0,0,0,0) 100%),
+    radial-gradient(ellipse 46% 40% at 50% 66%, rgba(150, 78, 92, 0.12), rgba(150, 78, 92, 0) 70%),
+    radial-gradient(ellipse 85% 80% at 50% 60%, rgba(0,0,0,0) 55%, rgba(0,0,0,0.65) 100%);
+}
+
+body.sink-mode #abyss-shade { opacity: 1; }
 
 .sinkhole-section {
   max-width: 1180px;
-  padding-top: 2.5rem;
+  padding-top: 0;
 }
 
-.sk-hero {
+.sk-stage {
   position: relative;
+  min-height: calc(100vh - var(--nav-h));
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;          /* title, status, the hole and the credits share one axis */
+  text-align: center;
+  padding-bottom: 12vh;
+}
+
+.sk-title {
+  font-size: clamp(3.4rem, 11vw, 10rem);
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  line-height: 1;
+  white-space: nowrap;
+}
+
+.sk-title span {
+  display: inline-block;
+  transform: translateY(calc(var(--d) * 1em));
+  animation: settle 9s ease-in-out infinite;
+  animation-delay: calc(var(--i) * -1.1s);
+}
+
+/* Letters breathe a few pixels deeper, then rise — barely */
+@keyframes settle {
+  0%, 100% { transform: translateY(calc(var(--d) * 1em)); }
+  50%      { transform: translateY(calc(var(--d) * 1em + 0.04em)); }
+}
+
+.sk-by {
+  margin-top: 1.6rem;
+  font-size: 1rem;
+  color: var(--text-dim);
+}
+
+.sk-still {
   aspect-ratio: 2.39 / 1;
   overflow: hidden;
   background: var(--surface);
 }
 
-.sk-hero img {
-  position: absolute;
-  inset: 0;
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-}
-
-.sk-head {
-  display: flex;
-  justify-content: space-between;
-  align-items: baseline;
-  gap: 2rem;
-  margin-top: 2.25rem;
-  padding-bottom: 1.25rem;
-  border-bottom: 1px solid var(--rule);
-}
-
-.sk-title {
-  font-size: clamp(3rem, 9vw, 7.5rem);
-  font-weight: 700;
-  letter-spacing: 0.06em;
-  text-transform: uppercase;
-  line-height: 0.95;
-}
-
-.sk-status {
-  font-size: 0.95rem;
-  color: var(--text-dim);
-  white-space: nowrap;
-}
-
-.sk-body {
-  display: grid;
-  grid-template-columns: 1.4fr 1fr;
-  gap: 4rem;
-  margin-top: 2.5rem;
-}
+.sk-still img { width: 100%; height: 100%; object-fit: cover; display: block; }
 
 .sk-logline {
-  font-size: 1.2rem;
+  margin: 4rem 0;
+  max-width: 36rem;
+  font-size: 1.25rem;
   line-height: 1.65;
 }
 
-.sk-logline:empty::before {
-  content: 'More soon.';
-  color: var(--text-faint);
+.sk-credits {
+  max-width: 44rem;
+  margin: 6rem auto 8rem;
+  font-size: 0.92rem;
+  line-height: 1.5;
 }
 
 .sk-credit {
-  display: flex;
-  justify-content: space-between;
-  gap: 1.5rem;
-  padding: 0.6rem 0;
-  border-bottom: 1px solid var(--rule);
-  font-size: 0.92rem;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 2.25rem;
+  padding: 0.32rem 0;
 }
 
-.sk-credit span:first-child { color: var(--text-dim); }
+.sk-credit span:first-child { text-align: right; color: var(--text-dim); }
+.sk-credit span:last-child  { text-align: left; }
 
-.sk-trailer { margin-top: 3.5rem; }
+.sk-credit-head {
+  margin: 3.5rem 0 1.1rem;
+  text-align: center;
+  font-size: 0.85rem;
+  font-weight: 400;
+  color: var(--text-faint);
+}
 
-@media (max-width: 760px) {
-  .sk-body { grid-template-columns: 1fr; gap: 2.5rem; }
-  .sk-hero { aspect-ratio: 16 / 10; }
-  .sk-head { flex-direction: column; gap: 0.75rem; }
+@media (max-width: 560px) {
+  .sk-credit { gap: 1rem; font-size: 0.85rem; }
+}
+
+.sk-trailer { margin-bottom: 6rem; }
+
+/* The way in: the page dims and settles slightly deeper while the dark closes over it */
+#main { transition: transform 1.8s cubic-bezier(0.4, 0, 0.2, 1), filter 1.6s ease, opacity 1.6s ease; }
+body.sinking #main { transform: scale(0.985) translateY(8px); filter: blur(2px); opacity: 0.6; }
+
+/* The page surfaces slowly out of the dark */
+.section.sinkhole-section { transition: opacity 3s ease 0.6s, filter 3s ease 0.6s; filter: blur(8px); }
+.section.sinkhole-section.visible { filter: none; }
+
+@media (max-width: 640px) {
+  .sk-title { letter-spacing: 0.04em; }
+}
+
+/* "the world withholds" — at the bottom of the hole, only for those who stay still */
+.sk-tag {
+  position: absolute;
+  left: 50%;
+  top: calc(66vh - var(--nav-h));
+  transform: translate(-50%, -50%);
+  margin: 0;
+  font-family: 'IM Fell English SC', 'Iowan Old Style', Georgia, serif;   /* rough 17th-century print */
+  font-size: 1.05rem;
+  text-transform: uppercase;
+  letter-spacing: 0.22em;
+  padding-left: 0.22em;          /* balance the trailing letter-space so it stays centered */
+  color: rgb(224, 168, 178);
+  opacity: 0;
+  filter: blur(3px);
+  white-space: nowrap;
+  pointer-events: none;
+  transition: opacity 0.7s ease, filter 0.7s ease;
+}
+
+.sk-tag.surfaced {
+  opacity: 0.6;
+  filter: blur(0);
+  transition: opacity 6s ease, filter 6s ease;
+}
+
+/* The Sinkhole title: a dirty, flickering print */
+.sk-title-wrap {
+  position: relative;
+  width: min(62%, 540px);
+  margin: 0;
+  animation: weave 0.42s steps(1) infinite;
+}
+
+.sk-title-img {
+  display: block;
+  width: 100%;
+  height: auto;
+  animation: flicker 7.3s linear infinite;
+}
+
+/* Grime: boiling specks of dirt that darken the letters */
+.sk-title-wrap::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  mix-blend-mode: multiply;
+  opacity: 0.55;
+  -webkit-mask: var(--title-img) center / 100% 100% no-repeat;   /* dirt only on the letters */
+          mask: var(--title-img) center / 100% 100% no-repeat;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='220' height='220'%3E%3Cfilter id='d'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='1.3' numOctaves='2' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 0  0 0 0 0 0  0 0 0 0 0  0 0 0 -2.6 1.55'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23d)'/%3E%3C/svg%3E");
+  animation: grime 0.7s steps(5) infinite;
+}
+
+/* A hairline scratch that drifts in now and then */
+.sk-title-wrap::before {
+  content: '';
+  position: absolute;
+  top: -6%;
+  bottom: -6%;
+  left: 38%;
+  width: 1px;
+  background: rgba(233, 225, 211, 0.35);
+  opacity: 0;
+  pointer-events: none;
+  animation: scratch 11s linear infinite;
+}
+
+@keyframes flicker {
+  0%, 100% { opacity: 1; }
+  6%   { opacity: 0.93; }
+  7%   { opacity: 1; }
+  22%  { opacity: 0.97; }
+  31%  { opacity: 1; }
+  32%  { opacity: 0.78; }
+  33%  { opacity: 0.96; }
+  34%  { opacity: 1; }
+  58%  { opacity: 0.91; }
+  59%  { opacity: 1; }
+  76%  { opacity: 0.95; }
+  81%  { opacity: 0.84; }
+  82%  { opacity: 1; }
+}
+
+@keyframes weave {
+  0%   { transform: translate(0, 0); }
+  25%  { transform: translate(0.4px, -0.5px); }
+  50%  { transform: translate(-0.3px, 0.3px); }
+  75%  { transform: translate(0.2px, 0.6px); }
+}
+
+@keyframes grime {
+  0%   { background-position: 0 0; }
+  20%  { background-position: -60px 40px; }
+  40%  { background-position: 80px -30px; }
+  60%  { background-position: -20px -90px; }
+  80%  { background-position: 110px 70px; }
+  100% { background-position: 0 0; }
+}
+
+@keyframes scratch {
+  0%, 61%   { opacity: 0; left: 38%; }
+  62%       { opacity: 0.6; left: 38%; }
+  63%       { opacity: 0.2; left: 38.4%; }
+  64%       { opacity: 0.5; left: 38.2%; }
+  65%, 100% { opacity: 0; left: 38.2%; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .sk-title-wrap, .sk-title-img, .sk-title-wrap::after, .sk-title-wrap::before { animation: none; }
 }
 
 /* ---- ABOUT ---- */
@@ -504,7 +683,7 @@ body.modal-open #creek { opacity: 0; }
 .modal-backdrop {
   position: absolute;
   inset: 0;
-  background: rgba(24, 23, 21, 0.95);
+  background: rgba(22, 24, 20, 0.95);
   cursor: pointer;
 }
 
@@ -670,6 +849,7 @@ body.spring-mode .video-card { background: var(--surface); }
 }
 
 #veil.on { opacity: 1; pointer-events: all; }
+#veil.dark { background: #0b0907; }
 
 /* Once there, the page itself surfaces slowly */
 .section.spring-section { transition: opacity 2.4s ease 0.4s; }
@@ -711,6 +891,34 @@ body.spring-mode .video-card { background: var(--surface); }
   color: var(--text-dim);
 }
 
+/* ---- STORY THREAD (a way into Creeker Day) ---- */
+
+.story-thread {
+  position: fixed;
+  top: 0;
+  left: 0;
+  z-index: 150;
+  opacity: 0;
+  pointer-events: none;
+  font-size: 0.78rem;
+  color: rgb(226, 204, 158);
+  text-decoration: none;
+  white-space: nowrap;
+  padding: 0.4rem 0.5rem;          /* a slightly bigger target than the text */
+  will-change: transform, opacity;
+  transition: color 0.4s ease;
+}
+
+.story-thread.live { pointer-events: auto; cursor: pointer; }
+.story-thread:hover { color: #f1e4c4; }
+
+body.spring-mode .story-thread,
+body.sink-mode .story-thread { display: none; }
+
+/* Weaving into Creeker Day */
+body.weaving #main { opacity: 0; transition: opacity 1.2s ease; }
+.section.creeker-section { transition: opacity 1.8s ease 0.2s; }
+
 /* ---- RESPONSIVE ---- */
 
 @media (max-width: 640px) {
@@ -728,4 +936,5 @@ body.spring-mode .video-card { background: var(--surface); }
 @media (prefers-reduced-motion: reduce) {
   .ticker-inner { animation: none; }
   #creek { display: none; }
+  .sk-title span { animation: none; }
 }

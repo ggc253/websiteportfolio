@@ -48,6 +48,8 @@ async function init() {
 
   initCursorLabel();
   initCreek();
+  initAbyss();
+  initWithhold();
   initTicker();
 
   if ('scrollRestoration' in history) history.scrollRestoration = 'manual';
@@ -66,9 +68,27 @@ function route() {
 
   if (hash !== section) history.replaceState(null, '', location.search + '#' + section);
 
-  // Entering or leaving One Afternoon in Spring: a long, slow fade through light
-  const crossing = currentSection !== null && (section === 'spring') !== (currentSection === 'spring');
   const calm = matchMedia('(prefers-reduced-motion: reduce)').matches;
+  const first = currentSection === null;
+
+  // Into Sinkhole: the page sinks away and the ground opens
+  if (!first && !calm && !fading && section === 'sinkhole' && currentSection !== 'sinkhole') {
+    sinkInto(() => showSection(section));
+    return;
+  }
+  // Out of Sinkhole: rise back up through the dark
+  if (!first && !calm && !fading && currentSection === 'sinkhole' && section !== 'sinkhole') {
+    fadeThrough(900, 1100, () => showSection(section), 'dark');
+    return;
+  }
+  // Into Creeker Day: threads stream across while the page fades
+  if (!first && !calm && !fading && section === 'creeker' && currentSection !== 'creeker'
+      && currentSection !== 'spring') {
+    weaveInto(() => showSection(section));
+    return;
+  }
+  // Entering or leaving One Afternoon in Spring: a long, slow fade through light
+  const crossing = !first && (section === 'spring') !== (currentSection === 'spring');
   if (crossing && !calm && !fading) {
     const entering = section === 'spring';
     fadeThrough(entering ? 3200 : 1400, entering ? 2600 : 1200, () => showSection(section));
@@ -78,8 +98,9 @@ function route() {
 }
 
 // Fade a full-screen veil up, swap the page underneath, then let the veil dissolve
-function fadeThrough(inMs, outMs, swap) {
+function fadeThrough(inMs, outMs, swap, tone) {
   const veil = document.getElementById('veil');
+  veil.classList.toggle('dark', tone === 'dark');
   fading = true;
   hideCursorLabel();
   veil.style.transitionDuration = `${inMs}ms`;
@@ -97,8 +118,50 @@ function fadeThrough(inMs, outMs, swap) {
   }, inMs + 150);
 }
 
+// Sinking in: the page quietly dims and settles a little deeper, the dark
+// closes over it, then Sinkhole slowly surfaces out of the black.
+function sinkInto(swap) {
+  const veil = document.getElementById('veil');
+  fading = true;
+  hideCursorLabel();
+  document.body.classList.add('sinking');
+  veil.classList.add('dark');
+  veil.style.transitionDuration = '1600ms';
+  veil.classList.add('on');
+  setTimeout(() => {
+    swap();
+    document.body.classList.remove('sinking');
+    veil.style.transitionDuration = '2400ms';
+    requestAnimationFrame(() => requestAnimationFrame(() => veil.classList.remove('on')));
+    setTimeout(() => {
+      fading = false;
+      const h = location.hash.slice(1);
+      if (h && h !== currentSection) route();
+    }, 2400);
+  }, 1750);
+}
+
+// Weaving: many threads stream across the screen — the year's stories gathering —
+// while the current page fades out, then Creeker Day fades in as they thin out.
+function weaveInto(swap) {
+  fading = true;
+  hideCursorLabel();
+  creekSurge(2200);
+  document.body.classList.add('weaving');
+  setTimeout(() => {
+    swap();
+    document.body.classList.remove('weaving');
+    setTimeout(() => {
+      fading = false;
+      const h = location.hash.slice(1);
+      if (h && h !== currentSection) route();
+    }, 1600);
+  }, 1500);
+}
+
 function showSection(section) {
   currentSection = section;
+  document.body.classList.toggle('sink-mode', section === 'sinkhole');
 
   const noTicker = section === 'about' || section === 'sinkhole' || section === 'spring';
   document.body.classList.toggle('spring-mode', section === 'spring');
@@ -272,10 +335,20 @@ function renderSinkhole(s) {
   const container = document.getElementById('sinkhole-content');
   if (!container) return;
 
+  // Letters settle at uneven depths, as if into soft ground
+  const depths = [0, 0.05, 0.12, 0.03, 0.18, 0.07, 0.24, 0.1];
+  const title = String(s.title || 'Sinkhole').toUpperCase().split('').map((ch, i) =>
+    `<span style="--d:${depths[i % depths.length]};--i:${i}">${escHtml(ch)}</span>`).join('');
+
+  // End-credits style: centered, role on the left of the gutter, names on the right.
+  // "[Heading]" lines start a group; several names are separated by commas.
   const credits = String(s.credits || '').split('\n').map((l) => l.trim()).filter(Boolean)
     .map((l) => {
-      const [role, ...rest] = l.split(/\s+[—–-]\s+/);
-      return `<div class="sk-credit"><span>${escHtml(role)}</span><span>${escHtml(rest.join(' — '))}</span></div>`;
+      const head = l.match(/^\[(.+)\]$/);
+      if (head) return `<h3 class="sk-credit-head">${escHtml(head[1])}</h3>`;
+      const [role, ...rest] = l.split(/\s+[—–]\s+/);
+      const names = rest.join(' — ').split(/,\s+/).map(escHtml).join('<br>');
+      return `<div class="sk-credit"><span>${escHtml(role)}</span><span>${names}</span></div>`;
     }).join('');
 
   let trailer = '';
@@ -292,16 +365,19 @@ function renderSinkhole(s) {
       </div>`;
   }
 
+  const heading = s.title_image
+    ? `<h1 class="sk-title-wrap" style="--title-img:url('${esc(s.title_image)}')"><img class="sk-title-img" src="${escHtml(s.title_image)}" alt="${escHtml(s.title || 'Sinkhole')}"></h1>`
+    : `<h1 class="sk-title" aria-label="${escHtml(s.title || 'Sinkhole')}">${title}</h1>`;
+
   container.innerHTML = `
-    ${s.still ? `<div class="sk-hero"><img src="${escHtml(s.still)}" alt="${escHtml(s.title)}"></div>` : ''}
-    <div class="sk-head">
-      <h1 class="sk-title">${escHtml(s.title)}</h1>
-      ${s.status ? `<p class="sk-status">${escHtml(s.kicker || 'Feature film')}, ${escHtml(s.status.toLowerCase())}</p>` : ''}
+    <div class="sk-stage">
+      ${heading}
+      ${s.status ? `<p class="sk-by">${escHtml(s.status)}</p>` : ''}
+      ${s.tagline ? `<p class="sk-tag" id="sk-tag">${escHtml(s.tagline)}</p>` : ''}
     </div>
-    <div class="sk-body">
-      <p class="sk-logline">${escHtml(s.logline || '')}</p>
-      ${credits ? `<div class="sk-credits">${credits}</div>` : ''}
-    </div>
+    ${s.still ? `<div class="sk-still"><img src="${escHtml(s.still)}" alt=""></div>` : ''}
+    ${s.logline ? `<p class="sk-logline">${escHtml(s.logline)}</p>` : ''}
+    ${credits ? `<div class="sk-credits">${credits}</div>` : ''}
     ${trailer}`;
 }
 
@@ -509,59 +585,234 @@ function initTicker() {
 }
 
 // ---- CREEK ----
-// "Long exposure": fine threads drifting left to right, like a creek shot
-// with a slow shutter. Not interactive — it just flows.
+// A dozen faint wisps. Each drifts in, travels with a tail that fades to nothing,
+// then dissolves completely before a new one appears. Nothing builds up.
+// Now and then one warm "story thread" carries a tiny "July 4" — follow it to Creeker Day.
+
+let creekSurge = () => {};
 
 function initCreek() {
   const canvas = document.getElementById('creek');
-  if (!canvas || matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+  const tag = document.getElementById('story-thread');
+  if (!canvas || matchMedia('(prefers-reduced-motion: reduce)').matches) { if (tag) tag.hidden = true; return; }
   const ctx = canvas.getContext('2d');
+  let w = 0, h = 0, dpr = 1, wisps = [], extras = [], story = null;
+  let rgb = '168,196,208';
+  const GOLD = '226,204,158';
+  const readColor = () => {
+    const v = getComputedStyle(document.documentElement).getPropertyValue('--wisp-rgb').trim();
+    if (v) rgb = v.replace(/\s+/g, '');
+  };
 
-  let w = 0, h = 0, dpr = 1, threads = [];
+  const N = 12, BUCKETS = 8;
+  const spawn = (fresh, opts = {}) => {
+    const life = opts.life || 700 + Math.random() * 600;
+    return { x: opts.x ?? Math.random() * w * 0.75, y: opts.y ?? Math.random() * h, pts: [],
+             age: fresh ? Math.random() * life * 0.6 : 0, life,
+             len: opts.len || 220 + Math.random() * 180, speed: opts.speed || 0.55 + Math.random() * 0.35 };
+  };
+
+  // Surge: many threads stream across at once (used for the way into Creeker Day)
+  let surge = 0, surgeTarget = 0;
+  creekSurge = (ms) => {
+    surgeTarget = 1;
+    extras = Array.from({ length: 46 }, () => spawn(false, {
+      x: -Math.random() * w * 0.5, y: Math.random() * h, life: 400 + Math.random() * 200,
+      len: 160 + Math.random() * 160, speed: 2.2 + Math.random() * 1.6 }));
+    setTimeout(() => { surgeTarget = 0; }, ms);
+  };
+
+  // The story thread: appears every minute or so, carrying a "July 4" tag
+  let nextStory = 12 + Math.random() * 10;   // seconds after load
+  const spawnStory = () => {
+    story = spawn(false, { x: Math.random() * w * 0.3, y: h * (0.25 + Math.random() * 0.5),
+                           life: 1500, len: 420, speed: 0.6 });
+    story.hover = false;
+  };
 
   function resize() {
     dpr = Math.min(window.devicePixelRatio || 1, 2);
     w = innerWidth; h = innerHeight;
     canvas.width = w * dpr; canvas.height = h * dpr;
     ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
-    ctx.clearRect(0, 0, w, h);
-    const n = Math.round(Math.min(300, (w * h) / 5200));
-    threads = Array.from({ length: n }, () => ({ x: Math.random() * w, y: Math.random() * h }));
+    wisps = Array.from({ length: N }, () => spawn(true));
+    for (let i = 0; i < 300; i++) step(i / 60, false);    // start mid-flow
   }
+
+  function advance(s, t, speedMul) {
+    const a = Math.sin(s.y * 0.003 + s.x * 0.0016 + t * 0.012) * 0.5
+            + Math.sin(s.x * 0.0022 - s.y * 0.001 - t * 0.01) * 0.3;
+    s.x += (Math.cos(a) * s.speed + 0.25) * speedMul;
+    s.y += Math.sin(a) * s.speed * 0.6 * speedMul;
+    s.pts.push(s.x, s.y);
+    if (s.pts.length > s.len * 2) s.pts.splice(0, 2);
+    s.age += speedMul;
+  }
+
+  function paint(s, color, peak) {
+    const env = Math.sin(Math.PI * Math.min(1, s.age / s.life)) ** 1.5;   // fade in, hold, fade out
+    const n = s.pts.length / 2;
+    if (n < 3) return env;
+    for (let b = 0; b < BUCKETS; b++) {
+      const i0 = Math.floor(b * (n - 1) / BUCKETS), i1 = Math.floor((b + 1) * (n - 1) / BUCKETS);
+      const alpha = peak * env * ((b + 1) / BUCKETS) ** 1.6;            // tail fades into nothing
+      if (alpha < 0.003) continue;
+      ctx.strokeStyle = `rgba(${color},${alpha.toFixed(4)})`;
+      ctx.beginPath();
+      ctx.moveTo(s.pts[i0 * 2], s.pts[i0 * 2 + 1]);
+      for (let i = i0 + 1; i <= i1; i++) ctx.lineTo(s.pts[i * 2], s.pts[i * 2 + 1]);
+      ctx.stroke();
+    }
+    return env;
+  }
+
+  function step(t, draw = true) {
+    surge += (surgeTarget - surge) * 0.03;
+    if (draw) ctx.clearRect(0, 0, w, h);
+    ctx.lineWidth = 1; ctx.lineCap = 'round'; ctx.lineJoin = 'round';
+
+    for (let k = 0; k < wisps.length; k++) {
+      const s = wisps[k];
+      advance(s, t, 1 + surge * 1.5);
+      if (draw) paint(s, rgb, 0.13 + surge * 0.12);
+      if (s.age >= s.life || s.x > w + 40) wisps[k] = spawn(false);
+    }
+
+    // Surge threads: many stories converging
+    if (extras.length) {
+      for (const s of extras) { advance(s, t, 1); if (draw) paint(s, rgb, 0.3 * surge + 0.02); }
+      if (surge < 0.02 && surgeTarget === 0) extras = [];
+    }
+
+    // The story thread
+    if (!draw) return;
+    if (!story && t > nextStory && !document.body.classList.contains('sink-mode')) spawnStory();
+    if (story) {
+      advance(story, t, story.hover ? 0.25 : 1);
+      ctx.lineWidth = story.hover ? 1.5 : 1.2;
+      const env = paint(story, GOLD, story.hover ? 0.75 : 0.48);
+      ctx.lineWidth = 1;
+      if (tag) {
+        tag.style.transform = `translate3d(${story.x + 10}px, ${story.y - 22}px, 0)`;
+        tag.style.opacity = (env * (story.hover ? 1 : 0.8)).toFixed(3);
+        tag.classList.toggle('live', env > 0.25);
+      }
+      if (story.age >= story.life || story.x > w + 40) {
+        story = null;
+        if (tag) { tag.style.opacity = 0; tag.classList.remove('live'); tag.textContent = 'July 4'; }
+        nextStory = t + 45 + Math.random() * 30;
+      }
+    }
+  }
+
+  if (tag) {
+    tag.addEventListener('mouseenter', () => { if (story) { story.hover = true; tag.textContent = 'Creeker Day'; } });
+    tag.addEventListener('mouseleave', () => { if (story) story.hover = false; tag.textContent = 'July 4'; });
+  }
+
+  readColor();
+  setInterval(readColor, 1000);
   window.addEventListener('resize', resize);
   resize();
 
-  function step(t) {
-      // Slowly fade what's already drawn, so strokes build into silky trails
-      ctx.globalCompositeOperation = 'destination-out';
-      ctx.fillStyle = 'rgba(0,0,0,0.018)';
-      ctx.fillRect(0, 0, w, h);
-      ctx.globalCompositeOperation = 'source-over';
+  let t0 = null;
+  function frame(now) {
+    if (t0 === null) t0 = now;
+    const b = document.body.classList;
+    if (!b.contains('modal-open') && !b.contains('sink-mode') && !b.contains('spring-mode')) step((now - t0) * 0.001);
+    requestAnimationFrame(frame);
+  }
+  requestAnimationFrame(frame);
+}
 
-      ctx.strokeStyle = 'rgba(238,233,223,0.032)';   // warm off-white, not green
-      ctx.lineWidth = 0.8;
-      ctx.beginPath();
-      for (const p of threads) {
-        // A very slowly changing current, so strands run side by side instead of crossing
-        const a = Math.sin(p.y * 0.003 + p.x * 0.0016 + t * 0.012) * 0.5
-                + Math.sin(p.x * 0.0022 - p.y * 0.001 - t * 0.01) * 0.3;
-        const nx = p.x + Math.cos(a) * 1.0 + 0.4;
-        const ny = p.y + Math.sin(a) * 0.6;
-        ctx.moveTo(p.x, p.y);
-        ctx.lineTo(nx, ny);
-        p.x = nx; p.y = ny;
-        if (p.x > w + 5 || p.y < -5 || p.y > h + 5) { p.x = -5; p.y = Math.random() * h; }
-      }
-      ctx.stroke();
+// ---- THE WORLD WITHHOLDS ----
+// The tagline sits at the bottom of the hole and only surfaces if you stay
+// still for a while. Any movement and it sinks back out of sight.
+
+function initWithhold() {
+  let timer = 0;
+  const hide = () => {
+    const tag = document.getElementById('sk-tag');
+    if (tag) tag.classList.remove('surfaced');
+    clearTimeout(timer);
+    if (document.body.classList.contains('sink-mode')) {
+      timer = setTimeout(() => {
+        const t = document.getElementById('sk-tag');
+        if (t && window.scrollY < 40) t.classList.add('surfaced');
+      }, 6500);
+    }
+  };
+  ['pointermove', 'pointerdown', 'scroll', 'keydown', 'wheel', 'touchstart'].forEach((ev) =>
+    window.addEventListener(ev, hide, { passive: true }));
+  window.addEventListener('hashchange', () => setTimeout(hide, 50));
+  setTimeout(hide, 50);
+}
+
+// ---- ABYSS (Sinkhole page) ----
+// Hand-drawn rings emerge from a dark point and swell toward you, like falling
+// slowly down a well. Only runs on the Sinkhole page.
+
+function initAbyss() {
+  const canvas = document.getElementById('abyss');
+  if (!canvas) return;
+  const ctx = canvas.getContext('2d');
+  const still = matchMedia('(prefers-reduced-motion: reduce)').matches;
+  let w = 0, h = 0, dpr = 1, maxR = 0, rings = [];
+  const N = 16;
+  const grow = (r) => 0.06 + r * 0.0032;                  // perspective: faster as they near you
+  const fresh = () => ({ r: 2, seed: Math.random() * 100, rose: Math.random() < 0.33 });
+
+  function resize() {
+    dpr = Math.min(window.devicePixelRatio || 1, 2);
+    w = innerWidth; h = innerHeight;
+    canvas.width = w * dpr; canvas.height = h * dpr;
+    ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+    maxR = Math.hypot(w, h) * 0.7;
+    rings = [];
+    // Spread rings along the tunnel by running time forward
+    for (let i = 0; i < N; i++) {
+      const g = fresh();
+      for (let k = 0; k < i * 95; k++) g.r += grow(g.r);
+      if (g.r < maxR) rings.push(g);
+    }
   }
 
-  // Pre-run a few seconds so the page opens with trails already formed
-  function prewarm() { for (let i = 0; i < 600; i++) step(i * 0.0167); }
-  prewarm();
-  window.addEventListener('resize', prewarm);
+  let spawnClock = 0;
+  function step(t) {
+    ctx.clearRect(0, 0, w, h);
+    const cx = w * 0.5, cy = h * 0.66;
+    if (!still) {
+      if (++spawnClock > 95) { spawnClock = 0; rings.push(fresh()); }
+      for (const g of rings) g.r += grow(g.r);
+      rings = rings.filter((g) => g.r < maxR);
+    }
+    for (const g of rings) {
+      const depth = g.r / maxR;                          // 0 deep in the hole, 1 at your eye
+      const alpha = Math.min(1, depth * 9) * Math.min(1, (1 - depth) * 2.5) * 0.15;
+      if (alpha < 0.004) continue;
+      for (let pass = 0; pass < 2; pass++) {             // two offset strokes: a hand-drawn feel
+        ctx.strokeStyle = `rgba(${g.rose ? '224,168,178' : '233,225,211'},${(alpha * (pass ? 0.5 : 1)).toFixed(4)})`;
+        ctx.lineWidth = (pass ? 0.6 : 1) * (0.7 + depth * 0.9);
+        ctx.beginPath();
+        for (let k = 0; k <= 120; k++) {
+          const th = (k / 120) * Math.PI * 2;
+          const wob = 1 + 0.045 * Math.sin(3 * th + g.seed + t * 0.25)
+                        + 0.02 * Math.sin(7 * th - g.seed - t * 0.4) + pass * 0.008;
+          const x = cx + Math.cos(th) * g.r * wob * 1.15;
+          const y = cy + Math.sin(th) * g.r * wob * 0.82;
+          k ? ctx.lineTo(x, y) : ctx.moveTo(x, y);
+        }
+        ctx.stroke();
+      }
+    }
+  }
+
+  window.addEventListener('resize', resize);
+  resize();
 
   function frame(now) {
-    if (!document.body.classList.contains('modal-open')) step(now * 0.001 + 10);
+    const b = document.body.classList;
+    if (b.contains('sink-mode') && !b.contains('modal-open')) step(now * 0.001);
     requestAnimationFrame(frame);
   }
   requestAnimationFrame(frame);

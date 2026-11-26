@@ -2,12 +2,71 @@
 # Set "published: yes" to show it in the nav. While "no", preview it at
 # ggcooper.com/?preview#sinkhole
 # Put a still or poster in content/Sinkhole/ and set still: thumbs/<filename>
-# Credits: one per line, indented two spaces, "Role — Name"
+# Credits: one per line, indented two spaces, "Role — Name". Several names: separate with commas.
+# Group headings: a line like  [Cast]
 published: no
 title: Sinkhole
+title_image: thumbs/sinkhole-title.png
 kicker: Feature Film
 status: In post-production
+tagline: the world withholds
 logline:
 still:
 trailer_youtube_id:
 credits:
+  Directed by — Graham Cooper
+  Written by — Isaac Leggett, Graham Cooper
+  [Cast]
+  Gravekeeper — James Augustus Lee
+  Henry — Samuel Dunning
+  Hannah Leech — Uzunma Udeh
+  Danny — Jackson Kienitz
+  Charlotte Leech — Cat Hayes
+  Maggie — Julianna Zinkel
+  Dennis Leech — Zak Orth
+  Woman — Alexandra Landau
+  Man — Isaac Leggett
+  Boy — Wyatt Johnson
+  Charles Prewitt — Wolfgang Vann
+  Dad — Aion Harrison-Boyd
+  [Producers]
+  Producer — Isaac Leggett
+  Line Producer and Producer — Thomas J. Magg
+  Executive Producers — Greg Ansin, David Leggett, Jenny Leggett, Martin Leggett
+  [Crew]
+  Cinematographer — Jack Nitz
+  Editor — Graham Cooper
+  Art Director — Danica Carothers
+  Costume Designer — Caitlin Cochrane
+  First Assistant Director — Jon Mitchell
+  Makeup Department Head — Callie Filion
+  Makeup Artist — Annie Johnson
+  Makeup, Second Unit — Tess Miller
+  Sound Mixers — Marc DeBlasi, Brendan Laird
+  Boom Operator — Evan Hodick
+  Special Effects — Anthony Jones, David Leggett
+  Stunt Coordinator — Becca GT
+  Stunt Double, Hannah — Amira Johnson
+  Script Supervisor — David Zajac
+  Location Manager — David Leggett
+  Art PA — Peter St. Amour
+  [Camera and Electric]
+  First Assistant Camera — Daniel Ajemian, Ashton Hiatt, Quynh Le
+  Second Assistant Camera — Jessica Lim, Sonny Vega
+  Gaffers — George Konnaris, Ryan Silber
+  Key Grip — Jesus Sanchez
+  Best Boy Grip — Maurice Guadalupe
+  Best Boy Grip, Second Unit — Andrew L'heureux
+  Best Boy Electric — Jack Morel
+  Dolly Grip — Dwane Harris
+  G&E Swing — Kirk Beneby Jr., Kristian Beneby, Conor Clarke
+  Drone Operator — Jon Edwards
+  DIT — Mason Parlet
+  [Production]
+  Costumers — Emily Bilik, Liam Dague
+  Props — Caitlin Cochrane, Jenny Leggett
+  Production Assistants — Amelia Hanson, Ren Renner, Josh Stieve
+  Office PA — Gabriel Sharp
+  Transportation PA — Tomas Talamantes
+  Catering and Craft Services PA — Joseph Sturino
+  Set Medic — Bob Halberstadt
