@@ -1278,7 +1278,21 @@ body.weaving #main { opacity: 0; transition: opacity 1.2s ease; }
 
 @media (max-width: 600px) {
   .home-words { flex-direction: column; gap: 1.6rem; }
-  .home-foot { flex-direction: column; }
+}
+
+/* Phones: two corners, like the marks on a film frame. The countdown sits in the
+   bottom-left on two short lines; the Sinkhole logo in the bottom-right, on the
+   same bottom edge. No rule line. */
+.hn-short { display: none; }
+@media (max-width: 600px) {
+  .home-foot {
+    border-top: 0;
+    padding-top: 0;
+    align-items: flex-end;
+  }
+  .hn-wide { display: none; }
+  .hn-short { display: inline; font-size: 0.85rem; line-height: 1.45; }
+  .home-feature { padding: 0.4rem 0 0.15rem 1rem; margin: 0; }
 }
 
 /* The word in flight between pages */

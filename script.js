@@ -707,9 +707,12 @@ function renderHolidayNote() {
   if (!el) return;
   const c = creekerDay();
   const link = '<a href="#creeker">Creeker Day</a>';
+  const days = `${c.days.toLocaleString()} ${c.days === 1 ? 'day' : 'days'}`;
+  // A full sentence on wide screens; two short lines in the corner on phones
   el.innerHTML = c.today
-    ? `Today is ${link}.`
-    : `The next ${link} is July 4, ${c.year}. ${c.days.toLocaleString()} ${c.days === 1 ? 'day' : 'days'} to go.`;
+    ? `<span class="hn-wide">Today is ${link}.</span><span class="hn-short">${link}<br>is today</span>`
+    : `<span class="hn-wide">The next ${link} is July 4, ${c.year}. ${days} to go.</span>`
+      + `<span class="hn-short">${link}<br>${days} to go</span>`;
 }
 
 let creekerClock = 0;
