@@ -1170,18 +1170,51 @@ body.weaving #main { opacity: 0; transition: opacity 1.2s ease; }
 }
 .section.home-section.active { display: flex; }
 
+.home-section { overflow: clip; }
+
+/* The words and the drawing share one stage; the rings are centred on the words */
+.home-stage {
+  position: relative;
+  flex: 1;
+  display: flex;
+  min-height: 50vh;
+}
+
+/* Graham's hand-drawn rings: big, faint, turning once every three minutes */
+.home-rings {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  width: min(88vh, 72vw);
+  height: auto;
+  aspect-ratio: 1;
+  transform: translate(-50%, -50%);
+  opacity: 0;
+  pointer-events: none;
+  user-select: none;
+  transition: opacity 2.4s ease;
+  animation: rings-turn 180s linear infinite;
+}
+.home-rings.loaded { opacity: 0.09; }
+@keyframes rings-turn {
+  from { transform: translate(-50%, -50%) rotate(0deg); }
+  to   { transform: translate(-50%, -50%) rotate(360deg); }
+}
+@media (prefers-reduced-motion: reduce) { .home-rings { animation: none; } }
+
 .home-words {
+  position: relative;
+  z-index: 1;
   flex: 1;
   display: flex;
   justify-content: center;
   align-items: center;
-  gap: clamp(1.75rem, 5vw, 4.5rem);
-  min-height: 50vh;
+  gap: clamp(2.5rem, 5.5vw, 6rem);
 }
 
 .home-words a,
 .glide-word {
-  font-size: clamp(1.35rem, 2.4vw, 1.9rem);
+  font-size: clamp(2.1rem, 3.9vw, 3.75rem);
   font-weight: 700;
   letter-spacing: -0.02em;
   line-height: 1;
@@ -1279,6 +1312,8 @@ body.weaving #main { opacity: 0; transition: opacity 1.2s ease; }
 
 @media (max-width: 600px) {
   .home-words { flex-direction: column; gap: 1.6rem; }
+  .home-words a, .glide-word { font-size: clamp(1.35rem, 2.4vw, 1.9rem); }
+  .home-rings { width: 92vw; }
 }
 
 /* Phones: two corners, like the marks on a film frame. The countdown sits in the
