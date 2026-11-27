@@ -97,7 +97,7 @@ function route() {
   const crossing = !first && (section === 'spring') !== (currentSection === 'spring');
   if (crossing && !calm && !fading) {
     const entering = section === 'spring';
-    fadeThrough(entering ? 3200 : 1400, entering ? 2600 : 1200, () => showSection(section));
+    fadeThrough(entering ? 2000 : 1100, entering ? 1500 : 1000, () => showSection(section));
     return;
   }
   if (!fading) showSection(section);
@@ -897,13 +897,13 @@ function craneUp() {
     window.scrollTo(0, start);
     stopEvents.forEach((e) => window.addEventListener(e, stop, { passive: true }));
 
-    // Wait for the fade from white to clear, hold a beat, then rise
+    // Once the white starts to clear, hold a beat, then rise (overlapping the end of the fade)
     const begin = () => {
       if (!alive()) return stop();
-      if (fading) return setTimeout(begin, 100);
+      if (document.getElementById('veil').classList.contains('on')) return setTimeout(begin, 50);
       setTimeout(() => {
         if (!alive()) return stop();
-        const from = scrollY, ms = Math.min(4200, 2200 + from * 0.6);   // long pages take a little longer, never more than ~4s
+        const from = scrollY, ms = Math.min(3000, 1600 + from * 0.4);   // long pages take a little longer, never more than 3s
         const t0 = performance.now();
         const step = (now) => {
           if (!alive()) return stop();
@@ -912,7 +912,7 @@ function craneUp() {
           if (t < 1) requestAnimationFrame(step); else stop();
         };
         requestAnimationFrame(step);
-      }, 700);
+      }, 500);
     };
     begin();
   });

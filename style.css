@@ -1024,7 +1024,7 @@ body.spring-mode .video-card { background: var(--surface); }
 #veil.dark { background: #0b0907; }
 
 /* Once there, the page itself surfaces slowly */
-.section.spring-section { transition: opacity 2.4s ease 0.4s; }
+.section.spring-section { transition: opacity 1.4s ease 0.2s; }
 
 /* ---- CREEKER DAY ---- */
 
