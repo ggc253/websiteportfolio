@@ -1,0 +1,10 @@
+# Director spotlight — ggcooper.com/#director (linked from "Director" on the About page)
+# To spotlight a different film, swap the details below. "more" is the category page linked at the bottom.
+role: Director
+title: So Far So Good
+youtube_id: XLTsCWq8BFE
+thumbnail:
+category: Short Film
+year: 2023
+more: narrative
+description:

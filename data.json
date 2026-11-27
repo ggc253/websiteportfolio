@@ -222,7 +222,7 @@
   "about": {
     "quote": "Transcendence and Taboo",
     "bio": "Graham Cooper is a director and editor. He holds a Master's Degree from the David Lynch Graduate School of Cinematic Arts.\n\nHis work spans all genres with a focus on boundary pushing.\n\nHis first feature, Sinkhole, is in post-production.",
-    "facets": "Director — #narrative\nEditor — #documentary\nCreeker Day — #creeker\nThe long game — #spring",
+    "facets": "Director — #director\nEditor — #editor\nCreeker Day — #creeker\nThe long game — #spring",
     "email": "gg@grahamcooper.co",
     "vimeo": "",
     "youtube": "",
@@ -242,7 +242,7 @@
     "credits": "Directed by — Graham Cooper\nWritten by — Isaac Leggett, Graham Cooper\n[Cast]\nGravekeeper — James Augustus Lee\nHenry — Samuel Dunning\nHannah Leech — Uzunma Udeh\nDanny — Jackson Kienitz\nCharlotte Leech — Cat Hayes\nMaggie — Julianna Zinkel\nDennis Leech — Zak Orth\nWoman — Alexandra Landau\nMan — Isaac Leggett\nBoy — Wyatt Johnson\nCharles Prewitt — Wolfgang Vann\nDad — Aion Harrison-Boyd\n[Producers]\nProducer — Isaac Leggett\nLine Producer and Producer — Thomas J. Magg\nExecutive Producers — Greg Ansin, David Leggett, Jenny Leggett, Martin Leggett\n[Crew]\nCinematographer — Jack Nitz\nEditor — Graham Cooper\nArt Director — Danica Carothers\nCostume Designer — Caitlin Cochrane\nFirst Assistant Director — Jon Mitchell\nMakeup Department Head — Callie Filion\nMakeup Artist — Annie Johnson\nMakeup, Second Unit — Tess Miller\nSound Mixers — Marc DeBlasi, Brendan Laird\nBoom Operator — Evan Hodick\nSpecial Effects — Anthony Jones, David Leggett\nStunt Coordinator — Becca GT\nStunt Double, Hannah — Amira Johnson\nScript Supervisor — David Zajac\nLocation Manager — David Leggett\nArt PA — Peter St. Amour\n[Camera and Electric]\nFirst Assistant Camera — Daniel Ajemian, Ashton Hiatt, Quynh Le\nSecond Assistant Camera — Jessica Lim, Sonny Vega\nGaffers — George Konnaris, Ryan Silber\nKey Grip — Jesus Sanchez\nBest Boy Grip — Maurice Guadalupe\nBest Boy Grip, Second Unit — Andrew L'heureux\nBest Boy Electric — Jack Morel\nDolly Grip — Dwane Harris\nG&E Swing — Kirk Beneby Jr., Kristian Beneby, Conor Clarke\nDrone Operator — Jon Edwards\nDIT — Mason Parlet\n[Production]\nCostumers — Emily Bilik, Liam Dague\nProps — Caitlin Cochrane, Jenny Leggett\nProduction Assistants — Amelia Hanson, Ren Renner, Josh Stieve\nOffice PA — Gabriel Sharp\nTransportation PA — Tomas Talamantes\nCatering and Craft Services PA — Joseph Sturino\nSet Medic — Bob Halberstadt"
   },
   "spring": {
-    "title": "One Afternoon in Spring",
+    "title": "One Afternoon in Summer",
     "kicker": "A documentary",
     "release": "2047",
     "intro": "One trailer a year, every year, until the film comes out.\nWhat it's about...TBD",
@@ -262,6 +262,28 @@
       }
     ]
   },
+  "spotlights": {
+    "director": {
+      "role": "Director",
+      "title": "So Far So Good",
+      "youtube_id": "XLTsCWq8BFE",
+      "thumbnail": "",
+      "category": "Short Film",
+      "year": "2023",
+      "more": "narrative",
+      "description": ""
+    },
+    "editor": {
+      "role": "Editor",
+      "title": "Am I Crazy?",
+      "youtube_id": "XMexYGNz7p4",
+      "thumbnail": "thumbs/ctethumbnail.png",
+      "category": "Documentary Trailer",
+      "year": "2023",
+      "more": "documentary",
+      "description": ""
+    }
+  },
   "creeker": {
     "title": "Creeker Day",
     "since": "2017",
@@ -269,39 +291,146 @@
     "videos": [
       {
         "year": 2017,
-        "youtube_id": "CIuISq1CZEQ"
+        "youtube_id": "CIuISq1CZEQ",
+        "frames": [
+          "thumbs/creeker-2017/01.jpg",
+          "thumbs/creeker-2017/02.jpg",
+          "thumbs/creeker-2017/03.jpg",
+          "thumbs/creeker-2017/04.jpg",
+          "thumbs/creeker-2017/05.jpg",
+          "thumbs/creeker-2017/06.jpg",
+          "thumbs/creeker-2017/07.jpg",
+          "thumbs/creeker-2017/08.jpg",
+          "thumbs/creeker-2017/09.jpg",
+          "thumbs/creeker-2017/10.jpg"
+        ]
       },
       {
         "year": 2018,
-        "youtube_id": "koZzzm7aNFE"
+        "youtube_id": "koZzzm7aNFE",
+        "frames": [
+          "thumbs/creeker-2018/01.jpg",
+          "thumbs/creeker-2018/02.jpg",
+          "thumbs/creeker-2018/03.jpg",
+          "thumbs/creeker-2018/04.jpg",
+          "thumbs/creeker-2018/05.jpg",
+          "thumbs/creeker-2018/06.jpg",
+          "thumbs/creeker-2018/07.jpg",
+          "thumbs/creeker-2018/08.jpg",
+          "thumbs/creeker-2018/09.jpg",
+          "thumbs/creeker-2018/10.jpg"
+        ]
       },
       {
         "year": 2019,
-        "youtube_id": "nDdHxH3YEWc"
+        "youtube_id": "nDdHxH3YEWc",
+        "frames": [
+          "thumbs/creeker-2019/01.jpg",
+          "thumbs/creeker-2019/02.jpg",
+          "thumbs/creeker-2019/03.jpg",
+          "thumbs/creeker-2019/04.jpg",
+          "thumbs/creeker-2019/05.jpg",
+          "thumbs/creeker-2019/06.jpg",
+          "thumbs/creeker-2019/07.jpg",
+          "thumbs/creeker-2019/08.jpg",
+          "thumbs/creeker-2019/09.jpg",
+          "thumbs/creeker-2019/10.jpg"
+        ]
       },
       {
         "year": 2020,
-        "youtube_id": "IXmPkY-clmM"
+        "youtube_id": "IXmPkY-clmM",
+        "frames": [
+          "thumbs/creeker-2020/01.jpg",
+          "thumbs/creeker-2020/02.jpg",
+          "thumbs/creeker-2020/03.jpg",
+          "thumbs/creeker-2020/04.jpg",
+          "thumbs/creeker-2020/05.jpg",
+          "thumbs/creeker-2020/06.jpg",
+          "thumbs/creeker-2020/07.jpg",
+          "thumbs/creeker-2020/08.jpg",
+          "thumbs/creeker-2020/09.jpg",
+          "thumbs/creeker-2020/10.jpg"
+        ]
       },
       {
         "year": 2021,
-        "youtube_id": "jS5ncuJYS-I"
+        "youtube_id": "jS5ncuJYS-I",
+        "frames": [
+          "thumbs/creeker-2021/01.jpg",
+          "thumbs/creeker-2021/02.jpg",
+          "thumbs/creeker-2021/03.jpg",
+          "thumbs/creeker-2021/04.jpg",
+          "thumbs/creeker-2021/05.jpg",
+          "thumbs/creeker-2021/06.jpg",
+          "thumbs/creeker-2021/07.jpg",
+          "thumbs/creeker-2021/08.jpg",
+          "thumbs/creeker-2021/09.jpg",
+          "thumbs/creeker-2021/10.jpg"
+        ]
       },
       {
         "year": 2022,
-        "youtube_id": "I3TD2Fc40fE"
+        "youtube_id": "I3TD2Fc40fE",
+        "frames": [
+          "thumbs/creeker-2022/01.jpg",
+          "thumbs/creeker-2022/02.jpg",
+          "thumbs/creeker-2022/03.jpg",
+          "thumbs/creeker-2022/04.jpg",
+          "thumbs/creeker-2022/05.jpg",
+          "thumbs/creeker-2022/06.jpg",
+          "thumbs/creeker-2022/07.jpg",
+          "thumbs/creeker-2022/08.jpg",
+          "thumbs/creeker-2022/09.jpg",
+          "thumbs/creeker-2022/10.jpg"
+        ]
       },
       {
         "year": 2023,
-        "youtube_id": "keTgLyoLp5k"
+        "youtube_id": "keTgLyoLp5k",
+        "frames": [
+          "thumbs/creeker-2023/01.jpg",
+          "thumbs/creeker-2023/02.jpg",
+          "thumbs/creeker-2023/03.jpg",
+          "thumbs/creeker-2023/04.jpg",
+          "thumbs/creeker-2023/05.jpg",
+          "thumbs/creeker-2023/06.jpg",
+          "thumbs/creeker-2023/07.jpg",
+          "thumbs/creeker-2023/08.jpg",
+          "thumbs/creeker-2023/09.jpg",
+          "thumbs/creeker-2023/10.jpg"
+        ]
       },
       {
         "year": 2024,
-        "youtube_id": "uPY4DVnE-l8"
+        "youtube_id": "uPY4DVnE-l8",
+        "frames": [
+          "thumbs/creeker-2024/01.jpg",
+          "thumbs/creeker-2024/02.jpg",
+          "thumbs/creeker-2024/03.jpg",
+          "thumbs/creeker-2024/04.jpg",
+          "thumbs/creeker-2024/05.jpg",
+          "thumbs/creeker-2024/06.jpg",
+          "thumbs/creeker-2024/07.jpg",
+          "thumbs/creeker-2024/08.jpg",
+          "thumbs/creeker-2024/09.jpg",
+          "thumbs/creeker-2024/10.jpg"
+        ]
       },
       {
         "year": 2025,
-        "youtube_id": "EUYcmbdP2yI"
+        "youtube_id": "EUYcmbdP2yI",
+        "frames": [
+          "thumbs/creeker-2025/01.jpg",
+          "thumbs/creeker-2025/02.jpg",
+          "thumbs/creeker-2025/03.jpg",
+          "thumbs/creeker-2025/04.jpg",
+          "thumbs/creeker-2025/05.jpg",
+          "thumbs/creeker-2025/06.jpg",
+          "thumbs/creeker-2025/07.jpg",
+          "thumbs/creeker-2025/08.jpg",
+          "thumbs/creeker-2025/09.jpg"
+        ]
       }
     ]
   }

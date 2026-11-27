@@ -341,8 +341,16 @@ def main():
         state = "published" if output["sinkhole"].get("published", "").lower() == "yes" else "hidden (preview only)"
         print(f"  ✓  Sinkhole page loaded — {state}")
 
-    print("\nOne Afternoon in Spring:")
+    print("\nOne Afternoon in Summer:")
     output["spring"] = process_spring(CONTENT_DIR / "spring.txt")
+
+    print("\nSpotlights:")
+    output["spotlights"] = {}
+    spot_dir = CONTENT_DIR / "Spotlight"
+    if spot_dir.exists():
+        for f in sorted(spot_dir.glob("*.txt")):
+            output["spotlights"][f.stem.lower()] = parse_txt(f)
+            print(f"  ✓  #{f.stem.lower()}: {output['spotlights'][f.stem.lower()].get('title', '')}")
 
     print("\nCreeker Day:")
     output["creeker"] = process_yearly(CONTENT_DIR / "creeker.txt", "videos")

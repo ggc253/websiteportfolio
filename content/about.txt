@@ -6,8 +6,8 @@ bio: Graham Cooper is a director and editor. He holds a Master's Degree from the
   His first feature, Sinkhole, is in post-production.
 # Facets: one per line, "Name — the page it links to"
 facets:
-  Director — #narrative
-  Editor — #documentary
+  Director — #director
+  Editor — #editor
   Creeker Day — #creeker
   The long game — #spring
 email: gg@grahamcooper.co

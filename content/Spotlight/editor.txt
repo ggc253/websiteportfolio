@@ -1,0 +1,10 @@
+# Editor spotlight — ggcooper.com/#editor (linked from "Editor" on the About page)
+# To spotlight a different film, swap the details below. "more" is the category page linked at the bottom.
+role: Editor
+title: Am I Crazy?
+youtube_id: XMexYGNz7p4
+thumbnail: thumbs/ctethumbnail.png
+category: Documentary Trailer
+year: 2023
+more: documentary
+description:

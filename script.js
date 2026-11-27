@@ -15,7 +15,8 @@ function sinkholeVisible() {
 const CATS = [['narrative', 'Narrative'], ['commercial', 'Commercial'], ['documentary', 'Documentary']];
 
 function validSections() {
-  const base = ['home', 'commercial', 'narrative', 'documentary', 'about', 'spring', 'creeker'];
+  const base = ['home', 'commercial', 'narrative', 'documentary', 'about', 'spring', 'creeker']
+    .concat(Object.keys((siteData && siteData.spotlights) || {}));   // #director, #editor
   return sinkholeVisible() ? base.concat('sinkhole') : base;
 }
 
@@ -93,7 +94,7 @@ function route() {
     weaveInto(() => showSection(section));
     return;
   }
-  // Entering or leaving One Afternoon in Spring: a long, slow fade through light
+  // Entering or leaving One Afternoon in Summer: a long, slow fade through light
   const crossing = !first && (section === 'spring') !== (currentSection === 'spring');
   if (crossing && !calm && !fading) {
     const entering = section === 'spring';
@@ -170,15 +171,17 @@ function showSection(section) {
   document.body.classList.toggle('sink-mode', section === 'sinkhole');
   document.body.classList.toggle('creeker-mode', section === 'creeker');
   document.body.classList.toggle('about-mode', section === 'about');
+  const spotlight = !!(siteData && siteData.spotlights && siteData.spotlights[section]);
+  document.body.classList.toggle('spotlight-mode', spotlight);
 
-  const noTicker = section === 'about' || section === 'sinkhole' || section === 'spring';
+  const noTicker = ['about', 'sinkhole', 'spring', 'creeker'].includes(section) || spotlight;
   document.body.classList.toggle('spring-mode', section === 'spring');
   document.getElementById('ticker').classList.toggle('hidden', noTicker);
   document.getElementById('main').classList.toggle('no-ticker', noTicker);
 
   document.querySelectorAll('.section').forEach((s) => s.classList.remove('active', 'visible'));
 
-  const activeEl = document.getElementById('sec-' + section);
+  const activeEl = document.getElementById('sec-' + (spotlight ? 'spotlight' : section));
   if (activeEl) {
     activeEl.classList.add('active');
     renderSection(section);
@@ -193,8 +196,9 @@ function showSection(section) {
   window.scrollTo(0, 0);
 
   document.title = section === 'home'   ? 'G.G. COOPER'
-                 : section === 'spring' ? 'One Afternoon in Spring'
+                 : section === 'spring' ? 'One Afternoon in Summer'
                  : section === 'creeker' ? 'Creeker Day — G.G. Cooper'
+                 : spotlight ? `${siteData.spotlights[section].title} — G.G. Cooper`
                  : `${section.charAt(0).toUpperCase()}${section.slice(1)} — G.G. Cooper`;
 }
 
@@ -210,6 +214,7 @@ function renderSection(section) {
     creeker:   () => renderCreeker(siteData.creeker || {}),
     about:     () => renderAbout(siteData.about || {}),
   })[section]?.();
+  if (siteData.spotlights && siteData.spotlights[section]) renderSpotlight(siteData.spotlights[section]);
 }
 
 // ---- VIDEO GRID ----
@@ -764,7 +769,7 @@ function renderCreeker(cd) {
 
   const videos = (cd.videos || []).slice().sort((a, b) => b.year - a.year).map((v) => ({
     title: `Creeker Day ${v.year}`,
-    year: `The ${ordinal(v.year - since + 1)} annual, July 4, ${v.year}`,
+
     youtube_id: v.youtube_id,
     thumbnail: v.thumbnail,
     frames: v.frames,
@@ -918,6 +923,42 @@ function craneUp() {
   });
 }
 
+// ---- SPOTLIGHTS (#director, #editor) ----
+// One film, given the whole page: the role, the title, and a large frame that
+// plays right there when clicked.
+function renderSpotlight(sp) {
+  const el = document.getElementById('spotlight-content');
+  if (!el) return;
+  const v = { title: sp.title, youtube_id: sp.youtube_id, thumbnail: sp.thumbnail };
+  const thumb = getThumb(v);
+  const ytId = (thumb.includes('img.youtube.com') && sp.youtube_id) ? esc(sp.youtube_id) : '';
+  const meta = metaLine({ category: sp.category, client: sp.client, year: sp.year });
+  const more = (CATS.find(([k]) => k === sp.more) || [])[1];
+  const desc = String(sp.description || '').trim();
+  el.innerHTML = `
+    <p class="spot-role">${escHtml(sp.role || '')}</p>
+    <h1 class="spot-title">${escHtml(sp.title || '')}</h1>
+    ${meta ? `<p class="spot-meta">${escHtml(meta)}</p>` : ''}
+    <div class="spot-frame" role="button" tabindex="0" aria-label="Play ${escHtml(sp.title || '')}">
+      ${thumb ? `<img class="spot-poster" src="${escHtml(thumb)}" alt="" ${ytId ? `onload="upgradeYoutubeThumb(this,'${ytId}')"` : ''}>` : ''}
+      <div class="video-play" aria-hidden="true"></div>
+    </div>
+    ${desc ? `<p class="spot-desc">${escHtml(desc)}</p>` : ''}
+    <nav class="spot-links">
+      <a href="#about">About</a>
+      ${more ? `<a href="#${sp.more}">More ${more.toLowerCase()} work</a>` : ''}
+    </nav>`;
+  const frame = el.querySelector('.spot-frame');
+  const play = () => {
+    if (!sp.youtube_id || frame.classList.contains('playing')) return;
+    frame.classList.add('playing');
+    frame.innerHTML = `<iframe src="https://www.youtube-nocookie.com/embed/${encodeURIComponent(sp.youtube_id)}?autoplay=1&rel=0&modestbranding=1&playsinline=1"
+      allow="autoplay; fullscreen; picture-in-picture" allowfullscreen title="${escHtml(sp.title || '')}"></iframe>`;
+  };
+  frame.addEventListener('click', play);
+  frame.addEventListener('keydown', (e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); play(); } });
+}
+
 // ---- ONE AFTERNOON IN SPRING ----
 // Hidden page (FILMMAKER in the ticker). A ledger of one trailer per year until 2047.
 
@@ -931,9 +972,9 @@ function renderSpring(sp) {
   const byYear = {};
   (sp.trailers || []).forEach((t) => { byYear[t.year] = t; });
 
-  // Afternoons left until the first day of spring in the release year
-  const spring = new Date(release, 2, 20, 15, 0, 0);
-  const days = Math.max(0, Math.ceil((spring - new Date()) / 86400000));
+  // Afternoons left until the first day of summer in the release year
+  const summer = new Date(release, 5, 21, 15, 0, 0);
+  const days = Math.max(0, Math.ceil((summer - new Date()) / 86400000));
 
   const rows = [];
   for (let y = first; y <= release; y++) {
@@ -943,7 +984,7 @@ function renderSpring(sp) {
       continue;
     }
     if (t) {
-      const v = { title: sp.title || 'One Afternoon in Spring', category: 'Trailer', year: String(y),
+      const v = { title: sp.title || 'One Afternoon in Summer', category: 'Trailer', year: String(y),
                   youtube_id: t.youtube_id, thumbnail: t.thumbnail, vertical: t.vertical };
       const key = cardRegistry.push(v) - 1;
       const thumb = getThumb(v);
@@ -970,7 +1011,7 @@ function renderSpring(sp) {
 
   container.innerHTML = `
     <p class="sp-kicker">${escHtml(sp.kicker || 'A documentary')}</p>
-    <h1 class="sp-title">${escHtml(sp.title || 'One Afternoon in Spring')}</h1>
+    <h1 class="sp-title">${escHtml(sp.title || 'One Afternoon in Summer')}</h1>
     <p class="sp-coming">Coming in ${release}.</p>
     <p class="sp-count">${days.toLocaleString()} afternoons from now.</p>
     ${intro.length ? `<p class="sp-intro">${intro.map(escHtml).join('<br>')}</p>` : ''}

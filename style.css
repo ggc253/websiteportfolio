@@ -1340,6 +1340,78 @@ body.weaving #main { opacity: 0; transition: opacity 1.2s ease; }
 .sk-tile .portal-title { width: min(44%, 260px); }
 .sk-tile .portal-status { font-size: 0.78rem; }
 
+/* ---- SPOTLIGHTS (#director, #editor) ---- */
+/* Near-black, like a screening room. One film, given the whole page. */
+body.spotlight-mode {
+  --bg:      #0d0e0c;
+  --surface: #171815;
+  --rule:    rgba(236, 234, 220, 0.09);
+}
+body.spotlight-mode #creek,
+body.spotlight-mode .story-thread { opacity: 0; pointer-events: none; }
+
+.spotlight-section { max-width: 1180px; padding-top: 4rem; }
+
+.spot-role {
+  font-size: 1rem;
+  color: var(--text-dim);
+}
+
+.spot-title {
+  margin-top: 0.4rem;
+  font-size: clamp(2.6rem, 6vw, 5.2rem);
+  font-weight: 700;
+  letter-spacing: -0.02em;
+  line-height: 1;
+}
+
+.spot-meta {
+  margin-top: 0.9rem;
+  font-size: 0.95rem;
+  color: var(--text-dim);
+}
+
+.spot-frame {
+  position: relative;
+  margin-top: 2.75rem;
+  aspect-ratio: 16 / 9;
+  background: var(--surface);
+  overflow: hidden;
+  cursor: pointer;
+  outline: none;
+}
+.spot-poster {
+  position: absolute; inset: 0; width: 100%; height: 100%;
+  object-fit: cover; display: block;
+  filter: saturate(0.9) brightness(0.9);
+  transition: filter 1s cubic-bezier(0.22, 0.61, 0.36, 1), transform 2.4s cubic-bezier(0.22, 0.61, 0.36, 1);
+}
+.spot-frame:hover .spot-poster,
+.spot-frame:focus-visible .spot-poster { filter: saturate(1) brightness(1); transform: scale(1.015); }
+.spot-frame:hover .video-play,
+.spot-frame:focus-visible .video-play { opacity: 1; background: rgba(255,255,255,0.08); }
+.spot-frame iframe { position: absolute; inset: 0; width: 100%; height: 100%; border: 0; }
+.spot-frame.playing { cursor: default; }
+
+.spot-desc {
+  margin-top: 2rem;
+  max-width: 36rem;
+  font-size: 1rem;
+  line-height: 1.75;
+  color: var(--text-dim);
+}
+
+.spot-links {
+  display: flex;
+  gap: 2rem;
+  margin-top: 2.5rem;
+  padding-top: 1.25rem;
+  border-top: 1px solid var(--rule);
+  font-size: 0.95rem;
+}
+.spot-links a { color: var(--text-dim); text-decoration: none; transition: color 0.4s ease; }
+.spot-links a:hover { color: var(--text); }
+
 /* ---- RESPONSIVE ---- */
 
 @media (max-width: 640px) {
