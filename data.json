@@ -259,6 +259,12 @@
         "year": 2024,
         "youtube_id": "g3g08-98Wbs",
         "vertical": true
+      },
+      {
+        "year": 2025,
+        "video": "media/summer-2025.mp4",
+        "vertical": true,
+        "thumbnail": "thumbs/summer-2025.jpg"
       }
     ]
   },

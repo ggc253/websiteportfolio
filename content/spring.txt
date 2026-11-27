@@ -4,6 +4,9 @@
 #   2022 — https://youtu.be/XXXXXXXXXXX
 # Optional custom thumbnail per year: put the image in content/Spring/ and add it after the link:
 #   2023 — https://youtu.be/XXXXXXXXXXX — thumbs/spring2023.png
+# A trailer that can't go on YouTube: put the file in media/ and write its path instead of a link.
+# Add "— vertical" for a tall (9:16) video:
+#   2025 — media/summer-2025.mp4 — thumbs/summer-2025.jpg — vertical
 title: One Afternoon in Summer
 kicker: A documentary
 release: 2047
@@ -13,3 +16,4 @@ trailers:
   2022 — https://youtu.be/VIvCEXI7z80
   2023 — https://youtu.be/NwP_0mT5N1A
   2024 — https://www.youtube.com/shorts/g3g08-98Wbs
+  2025 — media/summer-2025.mp4 — thumbs/summer-2025.jpg — vertical

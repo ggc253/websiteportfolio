@@ -16,3 +16,9 @@
   to = "/404"
   status = 404
   force = true
+
+# Trailers hosted with the site: let browsers cache them for a week
+[[headers]]
+  for = "/media/*"
+  [headers.values]
+    Cache-Control = "public, max-age=604800"

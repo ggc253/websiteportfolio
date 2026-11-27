@@ -68,6 +68,7 @@ PHOTOS_OUT   = Path("photos")
 THUMBS_OUT   = Path("thumbs")
 
 IMAGE_EXTS = {".jpg", ".jpeg", ".png", ".webp", ".gif"}
+VIDEO_EXTS = (".mp4", ".webm", ".m4v")
 
 
 def copy_custom_thumbnails() -> None:
@@ -232,6 +233,18 @@ def parse_year_lines(text: str) -> list:
     for line in text.splitlines():
         parts = [p.strip() for p in line.replace("–", "—").split("—") if p.strip()]
         if len(parts) < 2 or not parts[0][:4].isdigit():
+            continue
+        if parts[1].lower().endswith(VIDEO_EXTS):
+            # A video file hosted with the site itself (e.g. media/summer-2025.mp4)
+            t = {"year": int(parts[0][:4]), "video": parts[1]}
+            extra = parts[2:]
+            if "vertical" in [x.lower() for x in extra]:
+                t["vertical"] = True      # a tall (9:16) video
+            thumbs = [x for x in extra if x.lower() != "vertical"]
+            if thumbs:
+                t["thumbnail"] = thumbs[0]
+            items.append(t)
+            print(f"  ✓  {t['year']}  (file: {t['video']})")
             continue
         t = {"year": int(parts[0][:4]), "youtube_id": youtube_id_from(parts[1])}
         if "/shorts/" in parts[1]:

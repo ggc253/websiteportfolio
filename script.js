@@ -988,7 +988,7 @@ function renderSpring(sp) {
     }
     if (t) {
       const v = { title: sp.title || 'One Afternoon in Summer', category: 'Trailer', year: String(y),
-                  youtube_id: t.youtube_id, thumbnail: t.thumbnail, vertical: t.vertical };
+                  youtube_id: t.youtube_id, video: t.video, thumbnail: t.thumbnail, vertical: t.vertical };
       const key = cardRegistry.push(v) - 1;
       const thumb = getThumb(v);
       const ytId = (thumb.includes('img.youtube.com') && v.youtube_id) ? esc(v.youtube_id) : '';
@@ -1084,10 +1084,13 @@ function openVideo(v) {
   } else if (v.vimeo_id) {
     embedUrl = `https://player.vimeo.com/video/${encodeURIComponent(v.vimeo_id)}?autoplay=1&title=0&byline=0&portrait=0`;
   }
-  if (!embedUrl) return;
+  if (!embedUrl && !v.video) return;
 
-  document.getElementById('modal-video').innerHTML = `
-    <iframe src="${embedUrl}" allow="autoplay; fullscreen; picture-in-picture" allowfullscreen
+  // A file hosted with the site plays in the browser's own player; otherwise YouTube/Vimeo
+  document.getElementById('modal-video').innerHTML = v.video
+    ? `<video src="${escHtml(v.video)}" controls autoplay playsinline preload="auto"
+              ${v.thumbnail ? `poster="${escHtml(v.thumbnail)}"` : ''} title="${escHtml(v.title)}"></video>`
+    : `<iframe src="${embedUrl}" allow="autoplay; fullscreen; picture-in-picture" allowfullscreen
             title="${escHtml(v.title)}"></iframe>`;
 
   hideCursorLabel();
