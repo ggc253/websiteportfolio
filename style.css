@@ -868,6 +868,7 @@ body.spring-mode ::selection { background: var(--text); color: var(--bg); }
 .spring-section {
   max-width: 980px;
   padding-top: 5rem;
+  padding-bottom: 45vh;          /* room for 2047 to sit mid-screen when the page opens */
 }
 
 .sp-kicker {

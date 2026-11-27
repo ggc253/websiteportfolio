@@ -575,7 +575,7 @@ function initCursorLabel() {
 
   main.addEventListener('mouseover', (e) => {
     const card = e.target.closest('.video-card[data-key]');
-    if (!card) return;
+    if (!card || currentSection === 'spring') return;      // the 2047 trailers speak for themselves
     const v = cardRegistry[+card.dataset.key];
     const clt = document.getElementById('cl-title');
     clt.textContent = v.title || '';
@@ -875,6 +875,49 @@ function initFlipbooks(grid) {
   });
 }
 
+// Crane up: the page opens on 2047, "The film.", holds a beat, then glides up to
+// the title in one smooth move, slow at both ends. Any scroll, click or key hands
+// control straight back.
+let craneRun = 0;
+function craneUp() {
+  if (matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+  const run = ++craneRun;
+  const stopEvents = ['wheel', 'touchstart', 'mousedown', 'keydown'];
+  let stopped = false;
+  const stop = () => { stopped = true; stopEvents.forEach((e) => window.removeEventListener(e, stop)); };
+  const alive = () => !stopped && run === craneRun && currentSection === 'spring';
+  const ease = (t) => (t < 0.5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2);
+
+  // After showSection has reset the scroll, drop down to 2047
+  requestAnimationFrame(() => {
+    const last = document.querySelector('.sp-row.final');
+    if (!last || !alive()) return;
+    const max = document.documentElement.scrollHeight - innerHeight;
+    const start = Math.min(max, last.getBoundingClientRect().top + scrollY - innerHeight * 0.45);
+    window.scrollTo(0, start);
+    stopEvents.forEach((e) => window.addEventListener(e, stop, { passive: true }));
+
+    // Wait for the fade from white to clear, hold a beat, then rise
+    const begin = () => {
+      if (!alive()) return stop();
+      if (fading) return setTimeout(begin, 100);
+      setTimeout(() => {
+        if (!alive()) return stop();
+        const from = scrollY, ms = Math.min(4200, 2200 + from * 0.6);   // long pages take a little longer, never more than ~4s
+        const t0 = performance.now();
+        const step = (now) => {
+          if (!alive()) return stop();
+          const t = Math.min(1, (now - t0) / ms);
+          window.scrollTo(0, from * (1 - ease(t)));
+          if (t < 1) requestAnimationFrame(step); else stop();
+        };
+        requestAnimationFrame(step);
+      }, 700);
+    };
+    begin();
+  });
+}
+
 // ---- ONE AFTERNOON IN SPRING ----
 // Hidden page (FILMMAKER in the ticker). A ledger of one trailer per year until 2047.
 
@@ -932,6 +975,9 @@ function renderSpring(sp) {
     <p class="sp-count">${days.toLocaleString()} afternoons from now.</p>
     ${intro.length ? `<p class="sp-intro">${intro.map(escHtml).join('<br>')}</p>` : ''}
     <div class="sp-ledger">${rows.join('')}</div>`;
+
+  craneUp();
+
 }
 
 // ---- ABOUT ----
